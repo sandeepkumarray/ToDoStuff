@@ -1,0 +1,62 @@
+@model My.World.Web.ViewModel.[TABLE_NAME]ViewModel
+
+@{
+    ViewData["Title"] = "View[TABLE_NAME]";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Breadcrumb"] = "[TABLE_NAME] / View";
+}
+
+
+<style>
+    .editorNative {
+        min-height: 2em;
+        overflow-y: scroll;
+        max-height: 12em;
+        max-width: 50em;
+        margin: 0;
+        margin-bottom: 2px;
+        padding: 1px 0;
+        color: black;
+        font-weight: 400;
+        font-size: 1.125rem;
+        font-family: Arial, Helvetica, sans-serif;
+        line-height: 2rem;
+        background: white;
+    }
+</style>
+<div class="c-body">
+    <main class="c-main">
+        <div class="container-fluid">
+            <div class="fade-in">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="card">
+                            <div class="card-header"><strong>[TABLE_NAME_S]</strong> Details</div>
+                            <div class="card-body">
+                                <form>
+[PROP_FIELDS]
+								</form>
+							</div>
+                            <div class="card-footer">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+
+@section Scripts {
+   
+    <script type="text/javascript">
+    
+[PROP_FUNC_JS]
+
+        $(document).ready(function () {
+[PROP_CALL_JS]
+        });
+
+    </script>
+}

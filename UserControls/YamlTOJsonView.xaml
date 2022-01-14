@@ -1,0 +1,87 @@
+﻿<UserControl x:Class="ToDoStuff.UserControls.YamlTOJsonView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:ToDoStuff.UserControls"
+             mc:Ignorable="d"  Background="DarkCyan"
+             d:DesignHeight="750" d:DesignWidth="800">
+    <Grid>
+        <Grid.Resources>
+            <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+        </Grid.Resources>
+
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="250"/>
+            <ColumnDefinition Width="20"/>
+            <ColumnDefinition/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="10"/>
+            <RowDefinition Height="40"/>
+            <RowDefinition Height="400"/>
+            <RowDefinition Height="40"/>
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Column="0" Grid.Row="1" Orientation="Horizontal" Grid.ColumnSpan="4" >
+            <RadioButton Name="rbYamlText" FontWeight="DemiBold" FontSize="20" FontFamily="Segoe UI" Foreground="White" Margin="5"  IsChecked="True"
+                         VerticalContentAlignment="Center">Enter YAML Text</RadioButton>
+            <RadioButton Name="rbYamlTextFile" FontWeight="DemiBold" FontSize="20" FontFamily="Segoe UI" Foreground="White" Margin="5" 
+                         VerticalContentAlignment="Center">Select YAML File</RadioButton>
+            <RadioButton Name="rbYamlFolder" FontWeight="DemiBold" FontSize="20" FontFamily="Segoe UI" Foreground="White" Margin="5" 
+                         VerticalContentAlignment="Center">Select Folder</RadioButton>
+        </StackPanel>
+
+        <Grid  Grid.Column="0" Grid.Row="2"  Grid.ColumnSpan="4" Visibility="{Binding ElementName=rbYamlText, Path=IsChecked, Converter={StaticResource BooleanToVisibilityConverter}}">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="250"/>
+                <ColumnDefinition Width="20"/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="10"/>
+                <RowDefinition Height="400"/>
+            </Grid.RowDefinitions>
+            <TextBlock Grid.Column="0" Grid.Row="1" FontWeight="DemiBold" FontSize="20" FontFamily="Segoe UI" Foreground="White" Text="Enter YAML Text" Margin="5"></TextBlock>
+            <RichTextBox Grid.Column="2" Grid.Row="1" Margin="5" Name="rtbYAMLText"></RichTextBox>
+
+        </Grid>
+
+        <Grid  Grid.Column="0" Grid.Row="2"  Grid.ColumnSpan="4" Visibility="{Binding ElementName=rbYamlTextFile, Path=IsChecked, Converter={StaticResource BooleanToVisibilityConverter}}">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="250"/>
+                <ColumnDefinition Width="20"/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="10"/>
+                <RowDefinition Height="40"/>
+            </Grid.RowDefinitions>
+            <TextBlock Grid.Column="0" Grid.Row="1" FontWeight="DemiBold" FontSize="20" FontFamily="Segoe UI" Foreground="White" Text="Text file with links" Margin="2"></TextBlock>
+            <TextBox Grid.Column="2" Grid.Row="1" Margin="2" Name="txtYAMLFilePath">C:\Users\sande\Desktop\ScrapOut\filename.yaml</TextBox>
+
+        </Grid>
+
+
+        <Grid  Grid.Column="0" Grid.Row="2"  Grid.ColumnSpan="4" Visibility="{Binding ElementName=rbYamlFolder, Path=IsChecked, Converter={StaticResource BooleanToVisibilityConverter}}">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="250"/>
+                <ColumnDefinition Width="20"/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="10"/>
+                <RowDefinition Height="40"/>
+            </Grid.RowDefinitions>
+            <TextBlock Grid.Column="0" Grid.Row="1" FontWeight="DemiBold" FontSize="20" FontFamily="Segoe UI" Foreground="White" Text="Text file with links" Margin="2"></TextBlock>
+            <TextBox Grid.Column="2" Grid.Row="1" Margin="2" Name="txtYAMLFolderPath">C:\Users\sande\Desktop\ScrapOut\</TextBox>
+
+        </Grid>
+        
+        <StackPanel Grid.Column="2" Grid.Row="8" Orientation="Horizontal" HorizontalAlignment="Right">
+            <Button Grid.Column="2" Grid.Row="8" FontWeight="DemiBold" FontSize="20" FontFamily="Segoe UI" Content="Execute" Width="150" 
+                HorizontalAlignment="Right" Margin="5" Name="btnProcess" Click="btnProcess_Click"></Button>
+        </StackPanel>
+        
+    </Grid>
+</UserControl>

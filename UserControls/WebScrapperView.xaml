@@ -1,0 +1,127 @@
+﻿<UserControl x:Class="ToDoStuff.UserControls.WebScrapperView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:ToDoStuff.UserControls"
+             mc:Ignorable="d" Background="Fuchsia"  
+             xmlns:nlog ="clr-namespace:NlogViewer;assembly=NlogViewer"
+             d:DesignHeight="750" d:DesignWidth="800">
+    <Grid>
+        <Grid.Resources>
+            <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+        </Grid.Resources>
+
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="250"/>
+            <ColumnDefinition Width="20"/>
+            <ColumnDefinition/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="10"/>
+            <RowDefinition Height="40"/>
+            <RowDefinition Height="120"/>
+            <RowDefinition Height="40"/>
+            <RowDefinition Height="40"/>
+            <RowDefinition Height="40"/>
+            <RowDefinition Height="40"/>
+            <RowDefinition Height="40"/>
+            <RowDefinition Height="40"/>
+            <RowDefinition Height="400"/>
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Column="0" Grid.Row="1" Orientation="Horizontal" Grid.ColumnSpan="4" >
+            <RadioButton Name="rbList" FontWeight="DemiBold" FontSize="20" FontFamily="Segoe UI" Foreground="White" Margin="5" IsChecked="True"
+                         VerticalContentAlignment="Center">Multiple Websites</RadioButton>
+            <RadioButton Name="rbUrl" FontWeight="DemiBold" FontSize="20" FontFamily="Segoe UI" Foreground="White" Margin="5" 
+                         VerticalContentAlignment="Center">Single Website</RadioButton>
+            <RadioButton Name="rbPaste" FontWeight="DemiBold" FontSize="20" FontFamily="Segoe UI" Foreground="White" Margin="5"
+                         VerticalContentAlignment="Center">Paste Links</RadioButton>
+        </StackPanel>
+
+        <Grid  Grid.Column="0" Grid.Row="2"  Grid.ColumnSpan="4" Visibility="{Binding ElementName=rbUrl, Path=IsChecked, Converter={StaticResource BooleanToVisibilityConverter}}">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="250"/>
+                <ColumnDefinition Width="20"/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="10"/>
+                <RowDefinition Height="40"/>
+            </Grid.RowDefinitions>
+            <TextBlock Grid.Column="0" Grid.Row="1" FontWeight="DemiBold" FontSize="20" FontFamily="Segoe UI" Foreground="White" Text="Enter URL" Margin="5"></TextBlock>
+            <TextBox Grid.Column="2" Grid.Row="1" Margin="5" Name="txtURL"></TextBox>
+
+        </Grid>
+
+        <Grid  Grid.Column="0" Grid.Row="2"  Grid.ColumnSpan="4" Visibility="{Binding ElementName=rbList, Path=IsChecked, Converter={StaticResource BooleanToVisibilityConverter}}">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="250"/>
+                <ColumnDefinition Width="20"/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="10"/>
+                <RowDefinition Height="40"/>
+            </Grid.RowDefinitions>
+            <TextBlock Grid.Column="0" Grid.Row="1" FontWeight="DemiBold" FontSize="20" FontFamily="Segoe UI" Foreground="White" Text="Text file with links" Margin="2"></TextBlock>
+            <TextBox Grid.Column="2" Grid.Row="1" Margin="2" Name="txtLinkFilePath">C:\Users\sande\Desktop\ScrapOut\fb_img_urls.txt</TextBox>
+
+        </Grid>
+
+        <Grid  Grid.Column="0" Grid.Row="2"  Grid.ColumnSpan="4" Visibility="{Binding ElementName=rbPaste, Path=IsChecked, Converter={StaticResource BooleanToVisibilityConverter}}">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="250"/>
+                <ColumnDefinition Width="20"/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="10"/>
+                <RowDefinition Height="100"/>
+            </Grid.RowDefinitions>
+            <TextBlock Grid.Column="0" Grid.Row="1" FontWeight="DemiBold" FontSize="20" FontFamily="Segoe UI" Foreground="White" Text="Paste links" Margin="2"></TextBlock>
+            <TextBox Grid.Column="2" Grid.Row="1" Margin="2" AcceptsReturn="True" VerticalScrollBarVisibility="Visible"
+                     TextWrapping="Wrap" TextAlignment="Left" Name="txtPasteUrls">http://example.com/api/media.ext</TextBox>
+
+        </Grid>
+
+
+
+        <TextBlock Grid.Column="0" Grid.Row="3" FontWeight="DemiBold" FontSize="20" FontFamily="Segoe UI" Foreground="White" Text="Profile" Margin="5"></TextBlock>
+        <ComboBox Grid.Column="2" Grid.Row="3" Margin="5" Name="cbProfiles" SelectionChanged="cbProfiles_SelectionChanged">           
+        </ComboBox>
+
+        <TextBlock Grid.Column="0" Grid.Row="4" FontWeight="DemiBold" FontSize="20" FontFamily="Segoe UI" Foreground="White" Text="Type Of Data to scrape" Margin="5"></TextBlock>
+        <ComboBox Grid.Column="2" Grid.Row="4" Margin="5" Name="cbTypeOfData">
+           
+        </ComboBox>
+
+        <TextBlock Grid.Column="0" Grid.Row="5" FontWeight="DemiBold" FontSize="20" FontFamily="Segoe UI" Foreground="White" Text="Pattern To Search" Margin="5"></TextBlock>
+        <TextBox Grid.Column="2" Grid.Row="5" Margin="5" Name="txtPatternToSearch"></TextBox>
+        
+        <TextBlock Grid.Column="0" Grid.Row="6" FontWeight="DemiBold" FontSize="20" FontFamily="Segoe UI" Foreground="White" Text="Output Folder Path" Margin="5"></TextBlock>
+        <TextBox Grid.Column="2" Grid.Row="6" Margin="5" Name="txtOutputPath"></TextBox>
+
+        <TextBlock Grid.Column="0" Grid.Row="7" FontWeight="DemiBold" FontSize="20" FontFamily="Segoe UI" Foreground="White" Text="Create SubFolder(each url)" Margin="5"></TextBlock>
+        <CheckBox Grid.Column="2" Grid.Row="7" Margin="5" Name="txtSubFolder"></CheckBox>
+
+        <StackPanel Grid.Column="2" Grid.Row="8" Orientation="Horizontal" HorizontalAlignment="Right">
+            <Button Grid.Column="2" Grid.Row="8" FontWeight="DemiBold" FontSize="20" FontFamily="Segoe UI" Content="Save Profile" Width="150" 
+                HorizontalAlignment="Right" Margin="5" Name="btnSaveProfile" Click="btnSaveProfile_Click"></Button>
+            
+            <Button Grid.Column="2" Grid.Row="8" FontWeight="DemiBold" FontSize="20" FontFamily="Segoe UI" Content="Execute" Width="150" 
+                HorizontalAlignment="Right" Margin="5" Name="btnProcess" Click="btnProcess_Click"></Button>
+
+            <Button Grid.Column="2" Grid.Row="4" FontWeight="DemiBold" FontSize="20" FontFamily="Segoe UI" Content="Export Logs" Width="150" 
+                HorizontalAlignment="Right" Margin="5" Name="btnExportExcel" Click="btnExportExcel_Click"></Button>
+
+            <Button Grid.Column="2" Grid.Row="4" FontWeight="DemiBold" FontSize="20" FontFamily="Segoe UI" Content="Check Url" Width="150" 
+                HorizontalAlignment="Right" Margin="5" Name="btnCheckUrl" Click="btnCheckUrl_Click"></Button>
+
+
+        </StackPanel>
+        <ScrollViewer  Margin="5"  Grid.Column="3" Grid.Row="9" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
+            <nlog:NlogViewer x:Name="logCtrl" Margin="5"  Grid.Column="3" Grid.Row="8" />
+        </ScrollViewer>
+    </Grid>
+</UserControl>

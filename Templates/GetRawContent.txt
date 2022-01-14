@@ -1,0 +1,7 @@
+﻿        private string GetRawContent(string _rawContent)
+        {
+            using (StreamReader reader = new StreamReader(Request.Body, Encoding.UTF8))
+            {
+                return reader.ReadToEndAsync().Result;
+            }
+        }
