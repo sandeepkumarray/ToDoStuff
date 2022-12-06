@@ -17,6 +17,13 @@ namespace ToDoStuff
         }
 
         public SQLConnector(string server, string username,
+            string password) : this()
+        {
+            dbMan.connection = new MySqlConnection("port=3306;server=" + server + ";user id=" + username + ";password=" + password);
+            dbMan.connection.Open();
+        }
+
+        public SQLConnector(string server, string username,
             string password, string database) : this()
         {
             dbMan.connection = new MySqlConnection("port=3306;server=" + server + ";user id=" + username + ";password=" + password + ";database=" + database);
@@ -35,6 +42,14 @@ namespace ToDoStuff
         {
             dbMan.cmd.Connection = dbMan.connection;
             dbMan.cmd.CommandText = "select * from information_schema.columns where table_name='" + tablename + "' and table_schema='" + schema + "';";
+
+            return dbMan.ExecuteDataSet(dbMan.cmd);
+        }
+
+        internal DataSet GetDatabases()
+        {
+            dbMan.cmd.Connection = dbMan.connection;
+            dbMan.cmd.CommandText = "SHOW databases;";
 
             return dbMan.ExecuteDataSet(dbMan.cmd);
         }

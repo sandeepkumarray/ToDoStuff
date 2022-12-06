@@ -11,6 +11,9 @@ namespace ToDoStuff
     public class CSharpClassFileSetting
     {
         #region Properties
+        public string ClassName { get; set; }
+        public string ClassFileName { get; set; }
+        public string InheritedClass { get; set; }
         public bool IsIncludeUsings { get; set; }
         public bool IsIncludeNameSpace { get; set; }
         public string NameSpace { get; set; }
@@ -19,7 +22,7 @@ namespace ToDoStuff
         public bool IsXmlRoot { get; set; }
         public bool IsIncludeDefaultConstructor { get; set; }
         public bool IsIncludeParametrizedConstructor { get; set; }
-        public ObservableCollection<ClassProperty> Parameters { get; set; }
+        public ObservableCollectionFast<ClassProperty> Parameters { get; set; }
         public string CSharpFilePath { get; set; }
         public string CSharpFileExtension { get; set; }
         public bool IsAdditionalCodeSnippet { get; set; }
@@ -27,14 +30,15 @@ namespace ToDoStuff
         public string ParameterizedConstructorContent { get; set; }
         public bool IsClassNameCamelCasing { get; set; }
         public char Separator { get; set; }
-        public ObservableCollection<string> UserDefinedUsings { get; set; }
+        public ObservableCollectionFast<string> UserDefinedUsings { get; set; }
+        public List<ClassMethodModel> ClassMethods { get; set; }
         #endregion
 
         public List<string> Attributes { get; set; }
         public CSharpClassFileSetting()
         {
-            Parameters = new ObservableCollection<ClassProperty>();
-            UserDefinedUsings = new ObservableCollection<string>();
+            Parameters = new ObservableCollectionFast<ClassProperty>();
+            UserDefinedUsings = new ObservableCollectionFast<string>();
             Attributes = new List<string>();
             CSharpFilePath = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
             CSharpFileExtension = "cs";

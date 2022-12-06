@@ -20,18 +20,33 @@ namespace ToDoStuff.Model
             },
         };
     }
+
+    public class PostmanCollectionSetting
+    {
+        public string CollectionName { get; set; }
+        public string Description { get; set; }
+        public List<string> path { get; set; }
+        public List<string> host { get; set; }
+    }
+
     public class PostmanCollectionModel
     {
-
         [JsonProperty("info")]
         public Info info { get; set; }
 
         [JsonProperty("item")]
         public List<Item> item { get; set; }
 
+        [JsonProperty("setting")]
+        PostmanCollectionSetting Setting { get; set; }
         public PostmanCollectionModel()
         {
             item = new List<Item>();
+        }
+        public PostmanCollectionModel(PostmanCollectionSetting postmanCollectionSetting)
+        {
+            item = new List<Item>();
+            Setting = postmanCollectionSetting;
         }
         public static PostmanCollectionModel FromJson(string json) { return JsonConvert.DeserializeObject<PostmanCollectionModel>(json, Converter.Settings); }
     }
@@ -75,9 +90,26 @@ namespace ToDoStuff.Model
         public Options options { get; set; }
     }
 
+    public class Header
+    {
+        [JsonProperty("key")]
+        public string key { get; set; }
+        [JsonProperty("value")]
+        public string value { get; set; }
+        [JsonProperty("type")]
+        public string type { get; set; }
+    }
+    
+    public class Query
+    {
+        [JsonProperty("key")]
+        public string key { get; set; }
+        [JsonProperty("value")]
+        public string value { get; set; }
+    }
+
     public class Url
     {
-
         [JsonProperty("raw")]
         public string raw { get; set; }
 
@@ -92,6 +124,9 @@ namespace ToDoStuff.Model
 
         [JsonProperty("path")]
         public List<string> path { get; set; }
+
+        [JsonProperty("query")]
+        public List<Query> query { get; set; }
     }
 
     public class Request
@@ -101,7 +136,7 @@ namespace ToDoStuff.Model
         public string method { get; set; }
 
         [JsonProperty("header")]
-        public List<object> header { get; set; }
+        public List<Header> header { get; set; }
 
         [JsonProperty("body")]
         public Body body { get; set; }

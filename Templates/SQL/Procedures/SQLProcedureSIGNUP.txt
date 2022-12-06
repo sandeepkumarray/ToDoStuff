@@ -1,0 +1,10 @@
+﻿CREATE PROCEDURE `signup_User`(
+IN `email` VARCHAR(350), 
+IN `encrypted_password` VARCHAR(200), 
+OUT `id` BIGINT
+)
+BEGIN
+INSERT INTO users(name, email, username, encrypted_password) 
+VALUES (email, email, email, encrypted_password);
+SET id = LAST_INSERT_ID();
+END

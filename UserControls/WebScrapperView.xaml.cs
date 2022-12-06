@@ -37,10 +37,10 @@ namespace ToDoStuff.UserControls
         Logger log = LogManager.GetLogger("Web Scrap");
 
         CancellationTokenSource _cancelLogTask = new CancellationTokenSource();
-        ObservableCollection<WebScrapProfile> ProfileList = new ObservableCollection<WebScrapProfile>();
-        ObservableCollection<string> TypeList = new ObservableCollection<string>();
+        ObservableCollectionFast<WebScrapProfile> ProfileList = new ObservableCollectionFast<WebScrapProfile>();
+        ObservableCollectionFast<string> TypeList = new ObservableCollectionFast<string>();
 
-        string ProfileFileLocation = @"C:\Users\sande\Desktop\ScrapOut\ScrapProfiles.json";
+        string ProfileFileLocation = @"E:\AppDumps\ScrapOut\ScrapProfiles.json";
 
         public WebScrapperView()
         {
@@ -87,7 +87,7 @@ namespace ToDoStuff.UserControls
             //ProfileList.Add(profile);
 
             string profileJson = File.ReadAllText(ProfileFileLocation);
-            ProfileList = JsonConvert.DeserializeObject<ObservableCollection<WebScrapProfile>>(profileJson);
+            ProfileList = JsonConvert.DeserializeObject<ObservableCollectionFast<WebScrapProfile>>(profileJson);
 
             cbProfiles.ItemsSource = ProfileList;
             cbProfiles.DisplayMemberPath = "Name";
@@ -193,10 +193,11 @@ namespace ToDoStuff.UserControls
         {
             WebScrapperSettings webScrapperSettings = new WebScrapperSettings();
             webScrapperSettings.WebsiteUrl = Url;
-            webScrapperSettings.Profile.TypeOfData = Convert.ToString(cbTypeOfData.SelectionBoxItem);
-            webScrapperSettings.Profile.PatternToSearch = txtPatternToSearch.Text.Trim();
-            webScrapperSettings.Profile.SubFolder = txtSubFolder.IsChecked == true ? true : false;
-            webScrapperSettings.Profile.Name = ((WebScrapProfile)cbProfiles.SelectedItem).Name;
+            webScrapperSettings.Profile = (WebScrapProfile)cbProfiles.SelectedItem;
+            //webScrapperSettings.Profile.TypeOfData = Convert.ToString(cbTypeOfData.SelectionBoxItem);
+            //webScrapperSettings.Profile.PatternToSearch = txtPatternToSearch.Text.Trim();
+            //webScrapperSettings.Profile.SubFolder = txtSubFolder.IsChecked == true ? true : false;
+            //webScrapperSettings.Profile.Name = ((WebScrapProfile)cbProfiles.SelectedItem).Name;
 
             if (string.IsNullOrEmpty(txtOutputPath.Text.Trim()))
             {
@@ -240,6 +241,7 @@ namespace ToDoStuff.UserControls
                 int indexTOD = cbTypeOfData.Items.IndexOf(profile.TypeOfData);
                 cbTypeOfData.SelectedIndex = indexTOD;
                 txtOutputPath.Text = profile.OutputFolder;
+                txtEleAttr.Text = profile.AttributeName;
             }
         }
 
@@ -255,10 +257,11 @@ namespace ToDoStuff.UserControls
             profile.PatternToSearch = txtPatternToSearch.Text.Trim();
             profile.SubFolder = txtSubFolder.IsChecked == true ? true : false;
             profile.OutputFolder = txtOutputPath.Text.Trim();
+            profile.AttributeName = txtEleAttr.Text.Trim();
 
             ProfileList.Add(profile);
 
-            profileJson = JsonConvert.SerializeObject(ProfileList);
+            profileJson = JsonConvert.SerializeObject(ProfileList, Formatting.Indented);
             FileUtility.SaveDataToFile(ProfileFileLocation, profileJson, true);
         }
 
@@ -297,6 +300,30 @@ namespace ToDoStuff.UserControls
             catch (Exception ex)
             {
                 log.Error(ex.Message);
+            }
+        }
+
+        private void btnUpdateProfile_Click(object sender, RoutedEventArgs e)
+        {
+            if (cbProfiles.SelectedItem != null)
+            {
+                WebScrapProfile profile = (WebScrapProfile)cbProfiles.SelectedItem;
+                profile.TypeOfData = Convert.ToString(cbTypeOfData.SelectionBoxItem);
+                profile.PatternToSearch = txtPatternToSearch.Text.Trim();
+                profile.SubFolder = txtSubFolder.IsChecked == true ? true : false;
+                profile.OutputFolder = txtOutputPath.Text.Trim();
+                profile.AttributeName = txtEleAttr.Text.Trim();
+
+                var found = ProfileList.Any(x => x.Name == profile.Name);
+                if(found)
+                {
+                    int i = ProfileList.IndexOf(profile);
+                    ProfileList[i] = profile;
+                    cbProfiles.SelectedItem = profile;
+                }
+
+                var profileJson = JsonConvert.SerializeObject(ProfileList, Formatting.Indented);
+                FileUtility.SaveDataToFile(ProfileFileLocation, profileJson, true);
             }
         }
     }

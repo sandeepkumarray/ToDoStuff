@@ -28,8 +28,12 @@ namespace ToDoStuff.Model
             this.MethodType = null;
             this.MethodName = "Delete" + TableName;
 
+            this.Parameters = new List<ClassProperty>();
+            ClassProperty propData = new ClassProperty("model", TableName.ToCamelCase() + "Model");
+            this.Parameters.Add(propData);
+
             this.Attributes.Add("[HttpPost]");
-            this.Attributes.Add("[Route(\"" + this.MethodName + "\")]");
+            this.Attributes.Add("[Route(\"" + TableName + "/" + this.MethodName + "\")]");
 
             StringBuilder sb = new StringBuilder();
 
@@ -43,10 +47,10 @@ namespace ToDoStuff.Model
             sb.AppendLine("            try");
             sb.AppendLine("            {");
 
-            sb.AppendLine("                _rawContent = GetRawContent(_rawContent);");
-            sb.AppendLine("                var objPayLoad = JsonConvert.DeserializeObject<" + TableName.ToCamelCase() + "Model>(_rawContent);");
+            //sb.AppendLine("                _rawContent = GetRawContent(_rawContent);");
+            //sb.AppendLine("                var objPayLoad = JsonConvert.DeserializeObject<" + TableName.ToCamelCase() + "Model>(_rawContent);");
             sb.AppendLine("                var " + TableName + "Service = new " + TableName.ToCamelCase() + "Service(_dbContext);");
-            sb.AppendLine("                responseModel = " + TableName + "Service." + this.MethodName + "Data(objPayLoad);");
+            sb.AppendLine("                responseModel = " + TableName + "Service." + this.MethodName + "Data(model);");
 
             sb.AppendLine("            }");
             sb.AppendLine("            catch (Exception ex)");

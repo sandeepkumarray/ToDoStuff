@@ -28,6 +28,9 @@ using Table = MigraDoc.DocumentObjectModel.Tables.Table;
 using My.World.Api.DataAccess;
 using MySql.Data.MySqlClient;
 using Attribute = ToDoStuff.Model.Attribute;
+using ToDoStuff.Helpers;
+using ToDoStuff.Model.Angular;
+using ToDoStuff.Engine;
 
 namespace ToDoStuff.UserControls
 {
@@ -39,12 +42,78 @@ namespace ToDoStuff.UserControls
     {
         string CSharpMethodSelected = "";
         bool IsExecuteAll = false;
+        List<string> blockTableList = new List<string>()
+        {
+            "app_config",
+            "user_content_template",
+            "user_content_bucket",
+            "object_storage_keys",
+            "content_object_attachment",
+            "content_object",
+            "character_birthtowns",
+            "character_companions",
+            "character_enemies",
+            "character_floras",
+            "character_friends",
+            "character_items",
+            "character_love_interests",
+            "character_magics",
+            "character_technologies",
+            "content_plans",
+            "content_types",
+            "documents",
+            "folders",
+            "user_details",
+            "user_plan",
+            "users",
+            "content_blob_object",
+            "content_change_events",
+            "timeline_event_entities",
+            "timeline_events",
+            "user_blob",
+            "user_content_attributes"
+        };
+
+        List<string> tableList = new List<string>()
+        {
+            "buildings",
+            "characters",
+            "conditions",
+            "continents",
+            "countries",
+            "creatures",
+            "deities",
+            "floras",
+            "foods",
+            "governments",
+            "groups",
+            "items",
+            "jobs",
+            "landmarks",
+            "languages",
+            "locations",
+            "lores",
+            "magics",
+            "organizations",
+            "planets",
+            "races",
+            "religions",
+            "scenes",
+            "sports",
+            "technologies",
+            "towns",
+            "traditions",
+            "universes",
+            "vehicles"
+        };
 
         public SQLCSharpUtility()
         {
             InitializeComponent();
-
+            lstTableFilter.ItemsSource = blockTableList;
+            lstTablesEdit.ContextMenu = CreateListBoxContextMenu("Paste");
         }
+
         public string DisplayName { get; set; }
 
         public UserControl LoadControl()
@@ -52,32 +121,67 @@ namespace ToDoStuff.UserControls
             return this;
         }
 
-        SQLConnector GetSQLConnector()
+        private ContextMenu CreateListBoxContextMenu(string Action)
+        {
+            ContextMenu ContextMenuObj = new ContextMenu();
+            switch (Action)
+            {
+                case "Paste":
+                    MenuItem pasteItem = new MenuItem();
+                    pasteItem.Header = "Paste";
+                    pasteItem.Click += PasteItem_Click;
+                    ContextMenuObj.Items.Add(pasteItem);
+                    break;
+                default:
+                    break;
+            }
+            return ContextMenuObj;
+        }
+
+        private void PasteItem_Click(object sender, RoutedEventArgs e)
+        {
+            var copyData = Clipboard.GetDataObject();
+            if (copyData != null)
+            {
+                var datos = (string)copyData.GetData(DataFormats.Text);
+                var stringRows = datos.Split(new Char[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+
+                foreach (string stringRow in stringRows)
+                {
+                    lstTablesEdit.Items.Add(stringRow);
+                    lstTablesEdit.Items.Refresh();
+                }
+            }
+        }
+
+        SQLConnector GetSQLConnector(bool forDatabase = false)
         {
             string server = txtServer.Text.Trim();
             string username = txtUsername.Text.Trim();
             string password = txtPassword.Text.Trim();
-            string database = txtDatabase.Text.Trim();
-
-            return new SQLConnector(server, username, password, database);
+            if (forDatabase)
+            {
+                string database = Convert.ToString(((SQLTable)cbDatabase.SelectedValue).Name);
+                return new SQLConnector(server, username, password, database);
+            }
+            else
+                return new SQLConnector(server, username, password);
         }
 
         private void btnLoadTables_Click(object sender, RoutedEventArgs e)
         {
-            List<string> blockTableList = new List<string>() { "character_birthtowns", "character_companions", "character_enemies", "character_floras", "character_friends", "character_items", "character_love_interests", "character_magics", "character_technologies", "content_plans", "content_types", "documents", "folders", "user_content_template", "user_details", "user_plan", "users" };
-
-            SQLConnector sqlconn = GetSQLConnector();
+            SQLConnector sqlconn = GetSQLConnector(true);
             DataSet ds = sqlconn.GetTables();
             if (ds != null && ds.Tables != null && ds.Tables.Count > 0)
             {
-                ObservableCollection<SQLTable> SQLTableList = new ObservableCollection<SQLTable>();
+                ObservableCollectionFast<SQLTable> SQLTableList = new ObservableCollectionFast<SQLTable>();
                 DataTable dt = ds.Tables[0];
 
                 foreach (DataRow dr in dt.Rows)
                 {
-                    string tableName = dr["Tables_in_" + txtDatabase.Text.Trim()] == DBNull.Value ? default(string) : Convert.ToString(dr["Tables_in_" + txtDatabase.Text.Trim()]);
+                    string tableName = dr["Tables_in_" + Convert.ToString(((SQLTable)cbDatabase.SelectedValue).Name)] == DBNull.Value ? default(string) : Convert.ToString(dr["Tables_in_" + Convert.ToString(((SQLTable)cbDatabase.SelectedValue).Name)]);
 
-                    if (tableName.NotIn(blockTableList))
+                    if (tableName.NotIn(lstTableFilter.Items.OfType<string>().ToList()))
                     {
                         SQLTable sqlTable = new SQLTable();
                         sqlTable.Name = tableName;
@@ -88,32 +192,10 @@ namespace ToDoStuff.UserControls
                 lstTables.ItemsSource = SQLTableList;
                 lstTables.DisplayMemberPath = "Name";
 
-            }
-        }
+                lstTablesEdit.ItemsSource = SQLTableList;
+                lstTablesEdit.DisplayMemberPath = "Name";
+                lstTablesEdit.SelectedValuePath = "IsSelected";
 
-        private void CreateClass(string TableName)
-        {
-            if (!string.IsNullOrEmpty(TableName))
-            {
-                SQLConnector sqlconn = GetSQLConnector();
-                DataSet ds = sqlconn.ColumnList(TableName, txtDatabase.Text.Trim());
-                if (ds != null && ds.Tables != null && ds.Tables.Count > 0)
-                {
-                    List<ClassProperty> ClassProperties = new List<ClassProperty>();
-                    DataTable dt = ds.Tables[0];
-
-                    foreach (DataRow dr in dt.Rows)
-                    {
-                        ClassProperty prop = new ClassProperty();
-                        prop.PropName = dr["COLUMN_NAME"] == DBNull.Value ? default(string) : Convert.ToString(dr["COLUMN_NAME"]);
-                        string dataType = dr["DATA_TYPE"] == DBNull.Value ? default(string) : Convert.ToString(dr["DATA_TYPE"]);
-                        prop.PropType = prop.GetCsharpTypeFromDBType(dataType);
-                        ClassProperties.Add(prop);
-                    }
-
-                    CSharpUtility cSharpUtility = new CSharpUtility();
-                    cSharpUtility.CreateCSharpClass(TableName, ClassProperties);
-                }
 
             }
         }
@@ -150,7 +232,7 @@ namespace ToDoStuff.UserControls
         private void btnProcessAll_Click(object sender, RoutedEventArgs e)
         {
             IsExecuteAll = true;
-            IEnumerable<SQLTable> SQLTableList = (ObservableCollection<SQLTable>)lstTables.ItemsSource;
+            IEnumerable<SQLTable> SQLTableList = (ObservableCollectionFast<SQLTable>)lstTables.ItemsSource;
             ProcessForSelected(SQLTableList);
             MessageBox.Show("Process Completed!!!");
         }
@@ -174,6 +256,206 @@ namespace ToDoStuff.UserControls
             {
                 CreateJsonTemplates(SQLTableList);
             }
+
+            if (rbAngular.IsChecked == true)
+            {
+                DataStore dataStore = new DataStore();
+                DataStore OtherDataStore = new DataStore();
+                dataStore.Database = Convert.ToString(((SQLTable)cbDatabase.SelectedValue).Name);
+                OtherDataStore.Database = Convert.ToString(((SQLTable)cbDatabase.SelectedValue).Name);
+
+                foreach (var tableName in SQLTableList)
+                {
+                    List<ClassProperty> ColumnList = new List<ClassProperty>();
+
+                    if (!string.IsNullOrEmpty(tableName.Name))
+                    {
+                        SQLConnector sqlconn = GetSQLConnector(true);
+                        DataSet ds = sqlconn.ColumnList(tableName.Name, Convert.ToString(((SQLTable)cbDatabase.SelectedValue).Name));
+
+                        if (ds != null && ds.Tables != null && ds.Tables.Count > 0)
+                        {
+                            DataTable dt = ds.Tables[0];
+                            foreach (DataRow dr in dt.Rows)
+                            {
+                                ClassProperty prop = new ClassProperty();
+                                prop.PropName = dr["COLUMN_NAME"] == DBNull.Value ? default(string) : Convert.ToString(dr["COLUMN_NAME"]).RemoveSpecialCharacters();
+                                string dataType = dr["DATA_TYPE"] == DBNull.Value ? default(string) : Convert.ToString(dr["DATA_TYPE"]);
+                                prop.DBDataType = dataType;
+                                prop.PropType = prop.GetAngularTypeFromDBType(dataType);
+                                ColumnList.Add(prop);
+                            }
+                        }
+                        dataStore.Tables.Add(new DataStoreTable(tableName.Name, ColumnList));
+                    }
+                }
+
+                foreach (var tableName in blockTableList)
+                {
+                    List<ClassProperty> ColumnList = new List<ClassProperty>();
+
+                    if (!string.IsNullOrEmpty(tableName))
+                    {
+                        SQLConnector sqlconn = GetSQLConnector(true);
+                        DataSet ds = sqlconn.ColumnList(tableName, Convert.ToString(((SQLTable)cbDatabase.SelectedValue).Name));
+
+                        if (ds != null && ds.Tables != null && ds.Tables.Count > 0)
+                        {
+                            DataTable dt = ds.Tables[0];
+                            foreach (DataRow dr in dt.Rows)
+                            {
+                                ClassProperty prop = new ClassProperty();
+                                prop.PropName = dr["COLUMN_NAME"] == DBNull.Value ? default(string) : Convert.ToString(dr["COLUMN_NAME"]).RemoveSpecialCharacters();
+                                string dataType = dr["DATA_TYPE"] == DBNull.Value ? default(string) : Convert.ToString(dr["DATA_TYPE"]);
+                                prop.DBDataType = dataType;
+                                prop.PropType = prop.GetAngularTypeFromDBType(dataType);
+                                ColumnList.Add(prop);
+                            }
+                        }
+                        OtherDataStore.Tables.Add(new DataStoreTable(tableName, ColumnList));
+                    }
+                }
+
+                //Angular Project Class
+                if (chbAngularProjectClass.IsChecked == true)
+                {
+                    AngularClassDataSetting contentService = new AngularClassDataSetting();
+                    contentService.APIName = "api_content.php";
+
+                    new AngularPHPHelper("content.service.ts")
+                        .SetDataStore(dataStore)
+                        .GenerateAngularServiceClass(contentService)
+                        .GenerateAngularModelClass();
+
+                    AngularClassDataSetting myworldService = new AngularClassDataSetting();
+                    myworldService.APIName = "api_myworld.php";
+
+                    myworldService.ClassProperties = new ObservableCollectionFast<ClassProperty>();
+                    myworldService.ClassProperties.Add(new ClassProperty("ContentPlansList", "ContentPlans[]", "public"));
+                    myworldService.ClassProperties.Add(new ClassProperty("ContentTypesList", "ContentTypes[]", "public"));
+
+                    new AngularPHPHelper("myworld.service.ts")
+                        .SetDataStore(OtherDataStore)
+                        .GenerateAngularServiceClass(myworldService)
+                        .GenerateAngularModelClass();
+
+                }
+
+                //Angular PHP Include
+                if (chbAngularPhpInclude.IsChecked == true)
+                {
+                    AngularPHPHelper angularApiContentPHP = new AngularPHPHelper("api_content.php")
+                        .SetDataStore(dataStore)
+                        .SetPhpFileContent()
+                        .GeneratePHPFile();
+
+                    //AngularPHPHelper angularPHPHelper = new AngularPHPHelper("api_myworld.php")
+                    //    .SetDataStore(OtherDataStore)
+                    //    .SetPhpFileContent()
+                    //    .GeneratePHPFile();
+                }
+
+                //Ang-php service Postman Helper
+                if (chbAngularPhpPostHlp.IsChecked == true)
+                {
+                    PostmanCollectionSetting collectionSetting = new PostmanCollectionSetting();
+                    collectionSetting.CollectionName = "My World Contents API PHP Service";
+                    collectionSetting.Description = "Apis related to {0}.";
+                    collectionSetting.host = new List<string>();
+                    collectionSetting.host.AddRange(new[] { "localhost" });
+                    collectionSetting.path = new List<string>();
+                    collectionSetting.path.AddRange(new[] { "code_drops", "my-world-app", "php_includes", "api_content.php" });
+
+                    new AngularPHPHelper("php_my-world_Content_API_postman_collection.json")
+                         .SetDataStore(dataStore)
+                         .GeneratePostmanDoc(collectionSetting);
+
+                    PostmanCollectionSetting collectionSettingOther = new PostmanCollectionSetting();
+                    collectionSettingOther.CollectionName = "My World API PHP Service";
+                    collectionSettingOther.Description = "Apis related to {0}.";
+                    collectionSettingOther.host = new List<string>();
+                    collectionSettingOther.host.AddRange(new[] { "localhost" });
+                    collectionSettingOther.path = new List<string>();
+                    collectionSettingOther.path.AddRange(new[] { "code_drops", "my-world-app", "php_includes", "api_myworld.php" });
+
+                    new AngularPHPHelper("php_my-world_API_postman_collection.json")
+                        .SetDataStore(OtherDataStore)
+                        .GeneratePostmanDoc(collectionSettingOther);
+                }
+
+                //Angular Project Files
+                if (chbAngularProjectFiles.IsChecked == true)
+                {
+                    new AngularPHPHelper("content.service.ts")
+                          .SetDataStore(dataStore)
+                          .GenerateAngularComponentPackage();
+                }
+
+                //Angular Routine
+                if (chbAngularRoutine.IsChecked == true)
+                {
+                    new AngularRoutine()
+                           .SetDataStore(dataStore)
+                           .Initialize()
+                           .Process();
+                }
+
+                //Angular Engine
+                if (chbAngularEngine.IsChecked == true)
+                {
+                    Window window = new Window();
+                    window.Title = "Angular Engine View";
+                    AngularEngineRunSetView engineRunSetView = new AngularEngineRunSetView();
+
+                    AngularProjectEngine engine = new AngularProjectEngine().SetDataStore(dataStore);
+                    engineRunSetView.DataContext = engine;
+
+                    window.Content = engineRunSetView;
+                    window.WindowState = WindowState.Normal;
+                    window.WindowStyle = WindowStyle.ToolWindow;
+                    window.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+                    window.ResizeMode = ResizeMode.NoResize;
+                    window.ShowDialog();
+                }
+            }
+
+            if(rbSQLObjects.IsChecked == true)
+            {
+                DataStore dataStore = new DataStore();
+                DataStore OtherDataStore = new DataStore();
+                dataStore.Database = Convert.ToString(((SQLTable)cbDatabase.SelectedValue).Name);
+                OtherDataStore.Database = Convert.ToString(((SQLTable)cbDatabase.SelectedValue).Name);
+
+                foreach (var tableName in SQLTableList)
+                {
+                    List<ClassProperty> ColumnList = new List<ClassProperty>();
+
+                    if (!string.IsNullOrEmpty(tableName.Name))
+                    {
+                        SQLConnector sqlconn = GetSQLConnector(true);
+                        DataSet ds = sqlconn.ColumnList(tableName.Name, Convert.ToString(((SQLTable)cbDatabase.SelectedValue).Name));
+
+                        if (ds != null && ds.Tables != null && ds.Tables.Count > 0)
+                        {
+                            DataTable dt = ds.Tables[0];
+                            foreach (DataRow dr in dt.Rows)
+                            {
+                                ClassProperty prop = new ClassProperty();
+                                prop.PropName = dr["COLUMN_NAME"] == DBNull.Value ? default(string) : Convert.ToString(dr["COLUMN_NAME"]).RemoveSpecialCharacters();
+                                prop.DBDataType = dr["DATA_TYPE"] == DBNull.Value ? default(string) : Convert.ToString(dr["DATA_TYPE"]);
+                                prop.DB_ColumnType = dr["COLUMN_TYPE"] == DBNull.Value ? default(string) : Convert.ToString(dr["COLUMN_TYPE"]);
+                                prop.DB_ColumnKey = dr["COLUMN_KEY"] == DBNull.Value ? default(string) : Convert.ToString(dr["COLUMN_KEY"]);
+                                prop.PropType = prop.GetAngularTypeFromDBType(prop.DBDataType);
+                                ColumnList.Add(prop);
+                            }
+                        }
+                        dataStore.Tables.Add(new DataStoreTable(tableName.Name, ColumnList));
+                    }
+                }
+
+                if (chbProcedures.IsChecked == true)
+                    new SQLEngine().SetDataStore(dataStore).Initialize(SQLObjectType.Procedure).Process();
+            }
         }
 
         private void ProcessTable(string tableName)
@@ -183,8 +465,8 @@ namespace ToDoStuff.UserControls
 
             if (!string.IsNullOrEmpty(tableName))
             {
-                SQLConnector sqlconn = GetSQLConnector();
-                DataSet ds = sqlconn.ColumnList(tableName, txtDatabase.Text.Trim());
+                SQLConnector sqlconn = GetSQLConnector(true);
+                DataSet ds = sqlconn.ColumnList(tableName, Convert.ToString(((SQLTable)cbDatabase.SelectedValue).Name));
 
                 if (ds != null && ds.Tables != null && ds.Tables.Count > 0)
                 {
@@ -208,7 +490,7 @@ namespace ToDoStuff.UserControls
                 if (chbCSharpClass.IsChecked == true)
                 {
                     CSharpClass cSharpClass = new CSharpClass(tableName + "_model");
-                    cSharpClass.ClassProperties = new ObservableCollection<ClassProperty>(ClassProperties);
+                    cSharpClass.ClassProperties = new ObservableCollectionFast<ClassProperty>(ClassProperties);
                     cSharpClass.InheritedClass = "BaseModel";
                     cSharpClass.AddGetterSetter = true;
                     cSharpClass.CSharpClassFileSettings.IsClassNameCamelCasing = true;
@@ -236,7 +518,7 @@ namespace ToDoStuff.UserControls
                     string classData = cSharpClass.GenerateCSharpClassData(false);
 
                     FileUtility.SaveDataToFile(System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory),
-                        txtDatabase.Text.Trim(), "Models", cSharpClass.ClassName + ".cs"),
+                        Convert.ToString(((SQLTable)cbDatabase.SelectedValue).Name), "Models", cSharpClass.ClassName + ".cs"),
                         classData, true);
                 }
 
@@ -250,7 +532,7 @@ namespace ToDoStuff.UserControls
                             DALClassTemplate cSharpClass = new DALClassTemplate(tableName);
                             cSharpClass.ClassName = (tableName).ToCamelCase() + "DAL";
                             cSharpClass.InheritedClass = "BaseDAL";
-                            cSharpClass.ClassProperties = new ObservableCollection<ClassProperty>(ClassProperties);
+                            cSharpClass.ClassProperties = new ObservableCollectionFast<ClassProperty>(ClassProperties);
                             cSharpClass.CSharpClassFileSettings.IsClassNameCamelCasing = true;
                             cSharpClass.CSharpClassFileSettings.IsIncludeDefaultConstructor = true;
                             cSharpClass.CSharpClassFileSettings.IsIncludeNameSpace = true;
@@ -286,7 +568,7 @@ namespace ToDoStuff.UserControls
                             string classData = cSharpClass.GenerateCSharpClassData(false);
 
                             FileUtility.SaveDataToFile(System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory),
-                                txtDatabase.Text.Trim(), "DataAccess", (tableName).ToCamelCase() + "DAL" + ".cs"),
+                                Convert.ToString(((SQLTable)cbDatabase.SelectedValue).Name), "DataAccess", (tableName).ToCamelCase() + "DAL" + ".cs"),
                                 classData, true);
                             break;
                         case "APICONTROLLERCLASS":
@@ -300,7 +582,7 @@ namespace ToDoStuff.UserControls
                             break;
                         case "RUNROUTINE":
                             ClassRoutine classRoutine = new ClassRoutine(tableName, ClassProperties);
-                            classRoutine.Database = txtDatabase.Text.Trim();
+                            classRoutine.Database = Convert.ToString(((SQLTable)cbDatabase.SelectedValue).Name);
 
                             classRoutine
                                 .GenerateControllerClass()
@@ -309,7 +591,8 @@ namespace ToDoStuff.UserControls
                                 .GenerateJSFiles()
                                 .GenerateDALClass()
                                 .GenerateAPIServiceClass()
-                                .GenerateViewModelFiles();
+                                .GenerateViewModelFiles()
+                                .GenerateStartupClass((ObservableCollectionFast<SQLTable>)lstTables.ItemsSource);
 
                             break;
                         default:
@@ -325,7 +608,7 @@ namespace ToDoStuff.UserControls
                         jsonObj.Add(item, item);
                     }
 
-                    FileUtility.SaveDataToFile(System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory), txtDatabase.Text.Trim(), tableName + ".json"),
+                    FileUtility.SaveDataToFile(System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory), Convert.ToString(((SQLTable)cbDatabase.SelectedValue).Name), tableName + ".json"),
                         jsonObj.ToString(), true);
                 }
 
@@ -338,7 +621,7 @@ namespace ToDoStuff.UserControls
                         sb.AppendLine(Template.Replace("[Table_Name]", tableName).Replace("[COLUMN_NAME]", item.PropName).Replace("[DATA_TYPE]", item.PropType));
                     }
 
-                    FileUtility.SaveDataToFile(System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory), txtDatabase.Text.Trim(), tableName + ".txt"),
+                    FileUtility.SaveDataToFile(System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory), Convert.ToString(((SQLTable)cbDatabase.SelectedValue).Name), tableName + ".txt"),
                         sb.ToString(), false);
                 }
 
@@ -351,7 +634,7 @@ namespace ToDoStuff.UserControls
                         string server = txtServer.Text.Trim();
                         string username = txtUsername.Text.Trim();
                         string password = txtPassword.Text.Trim();
-                        string database = txtDatabase.Text.Trim();
+                        string database = Convert.ToString(((SQLTable)cbDatabase.SelectedValue).Name);
 
                         DBContext dbContext = new DBContext("port=3306;server=" + server + ";user id=" + username + ";password=" + password + ";database=" + database);
                         dbContext.cmd = new MySqlCommand();
@@ -381,7 +664,7 @@ namespace ToDoStuff.UserControls
                                 //sb.AppendLine(template);
                             }
                         }
-                        FileUtility.SaveDataToFile(System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory), txtDatabase.Text.Trim(), "Template.txt"),
+                        FileUtility.SaveDataToFile(System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory), Convert.ToString(((SQLTable)cbDatabase.SelectedValue).Name), "Template.txt"),
                             sb.ToString(), false);
                     }
 
@@ -397,19 +680,20 @@ namespace ToDoStuff.UserControls
                     {
                         StringBuilder sb = new StringBuilder();
                         string finalName = tableName.ToCamelCase();
-
-                        sb.AppendLine("export class " + finalName.Substring(0, finalName.Length - 1) + " {");
+                        sb.AppendLine("import { baseModel } from \"./ baseModel\";");
+                        sb.AppendLine("export class " + finalName.Substring(0, finalName.Length - 1) + " extends baseModel {");
                         foreach (var col in ColumnList)
                         {
                             sb.AppendLine("\tpublic " + col + "? : string;");
                         }
                         sb.AppendLine("}");
 
-                        FileUtility.SaveDataToFile(System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory), txtDatabase.Text.Trim(), finalName.Substring(0, finalName.Length - 1) + ".ts"),
+                        FileUtility.SaveDataToFile(System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory), Convert.ToString(((SQLTable)cbDatabase.SelectedValue).Name), finalName.Substring(0, finalName.Length - 1) + ".ts"),
                             sb.ToString(), false);
                     }
                 }
             }
+
 
             if (rbHtml.IsChecked == true)
             {
@@ -418,21 +702,21 @@ namespace ToDoStuff.UserControls
                     if (!string.IsNullOrEmpty(tableName))
                     {
                         string Template = new System.Windows.Documents.TextRange(txtHTMLCodeSnippet.Document.ContentStart, txtHTMLCodeSnippet.Document.ContentEnd).Text;
-                        StringBuilder sb = new StringBuilder();
+
                         string finalName = tableName.ToCamelCase();
 
-                        foreach (var item in ClassProperties)
-                        {
-                            sb.AppendLine(Template.Replace("[CONTROL_NAME]", item.PropName));
-                        }
+                        var listItems = (from prop in ClassProperties
+                                         select prop.PropName).ToList();
 
-                        FileUtility.SaveDataToFile(System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory), txtDatabase.Text.Trim(), finalName.Substring(0, finalName.Length - 1) + ".html"),
-                            sb.ToString(), true);
+                        CreateHTMLControlsEngine engine = new CreateHTMLControlsEngine(listItems, Template, "[CONTROL_NAME]".Trim());
+
+                        FileUtility.SaveDataToFile(System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory), Convert.ToString(((SQLTable)cbDatabase.SelectedValue).Name), finalName.Substring(0, finalName.Length - 1) + ".html"),
+                            engine.Process(), true);
                     }
 
                     if (IsExecuteAll)
                     {
-                        ObservableCollection<SQLTable> SQLTableList = (ObservableCollection<SQLTable>)lstTables.ItemsSource;
+                        ObservableCollectionFast<SQLTable> SQLTableList = (ObservableCollectionFast<SQLTable>)lstTables.ItemsSource;
 
 
                         string Template = new System.Windows.Documents.TextRange(txtHTMLCodeSnippet.Document.ContentStart, txtHTMLCodeSnippet.Document.ContentEnd).Text;
@@ -450,8 +734,8 @@ namespace ToDoStuff.UserControls
                             {
                                 ClassProperties = new List<ClassProperty>();
 
-                                SQLConnector sqlconn = GetSQLConnector();
-                                DataSet ds = sqlconn.ColumnList(tableName, txtDatabase.Text.Trim());
+                                SQLConnector sqlconn = GetSQLConnector(true);
+                                DataSet ds = sqlconn.ColumnList(tableName, Convert.ToString(((SQLTable)cbDatabase.SelectedValue).Name));
 
                                 if (ds != null && ds.Tables != null && ds.Tables.Count > 0)
                                 {
@@ -472,7 +756,7 @@ namespace ToDoStuff.UserControls
                             }
                         }
 
-                        FileUtility.SaveDataToFile(System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory), txtDatabase.Text.Trim(), finalName.Substring(0, finalName.Length - 1) + ".html"),
+                        FileUtility.SaveDataToFile(System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory), Convert.ToString(((SQLTable)cbDatabase.SelectedValue).Name), finalName.Substring(0, finalName.Length - 1) + ".html"),
                             sb.ToString(), true);
                     }
                 }
@@ -560,8 +844,8 @@ namespace ToDoStuff.UserControls
 
                     List<string> ColumnList = new List<string>();
 
-                    SQLConnector sqlconn = GetSQLConnector();
-                    DataSet ds = sqlconn.ColumnList(tableName.Name, txtDatabase.Text.Trim());
+                    SQLConnector sqlconn = GetSQLConnector(true);
+                    DataSet ds = sqlconn.ColumnList(tableName.Name, Convert.ToString(((SQLTable)cbDatabase.SelectedValue).Name));
 
                     foreach (var cat in categories)
                     {
@@ -598,7 +882,7 @@ namespace ToDoStuff.UserControls
 
                     var contentJSON = JsonConvert.SerializeObject(content, Formatting.Indented);
                     FileUtility.SaveDataToFile(System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory),
-                    txtDatabase.Text.Trim(), "Templates", tableName.Name + ".json"), contentJSON, true);
+                    Convert.ToString(((SQLTable)cbDatabase.SelectedValue).Name), "Templates", tableName.Name + ".json"), contentJSON, true);
 
                     contentTemplate.Contents.Add(content);
                 }
@@ -606,7 +890,7 @@ namespace ToDoStuff.UserControls
             }
             jsonTemplate = JsonConvert.SerializeObject(contentTemplate, Formatting.Indented);
             FileUtility.SaveDataToFile(System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory),
-            txtDatabase.Text.Trim(), "Templates", "MainTemplate.json"), jsonTemplate, true);
+            Convert.ToString(((SQLTable)cbDatabase.SelectedValue).Name), "Templates", "MainTemplate.json"), jsonTemplate, true);
         }
 
         private List<PropertyAttribute> GetUserdefinedAttributes()
@@ -637,8 +921,8 @@ namespace ToDoStuff.UserControls
 
                 if (!string.IsNullOrEmpty(tableName.Name))
                 {
-                    SQLConnector sqlconn = GetSQLConnector();
-                    DataSet ds = sqlconn.ColumnList(tableName.Name, txtDatabase.Text.Trim());
+                    SQLConnector sqlconn = GetSQLConnector(true);
+                    DataSet ds = sqlconn.ColumnList(tableName.Name, Convert.ToString(((SQLTable)cbDatabase.SelectedValue).Name));
 
                     if (ds != null && ds.Tables != null && ds.Tables.Count > 0)
                     {
@@ -712,7 +996,7 @@ namespace ToDoStuff.UserControls
                 postmanCollectionModel.item.Add(tableItem);
             }
 
-            FileUtility.SaveDataToFile(System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory), txtDatabase.Text.Trim(), "postman_collection" + ".json"),
+            FileUtility.SaveDataToFile(System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory), Convert.ToString(((SQLTable)cbDatabase.SelectedValue).Name), "postman_collection" + ".json"),
                JsonConvert.SerializeObject(postmanCollectionModel), true);
         }
 
@@ -739,7 +1023,7 @@ namespace ToDoStuff.UserControls
                 string interfaceData = cSharpInterface.GenerateCSharpClassData(false);
 
                 FileUtility.SaveDataToFile(System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory),
-                    txtDatabase.Text.Trim(), "Services", "I" + cSharpInterface.ClassName + ".cs"),
+                    Convert.ToString(((SQLTable)cbDatabase.SelectedValue).Name), "Services", "I" + cSharpInterface.ClassName + ".cs"),
                     interfaceData, true);
 
                 CSharpClass cSharpClass = new CSharpClass(tableName.Trim() + "_Service");
@@ -762,7 +1046,7 @@ namespace ToDoStuff.UserControls
                 string classData = cSharpClass.GenerateCSharpClassData(false);
 
                 FileUtility.SaveDataToFile(System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory),
-                    txtDatabase.Text.Trim(), "Services", cSharpClass.ClassName + ".cs"),
+                    Convert.ToString(((SQLTable)cbDatabase.SelectedValue).Name), "Services", cSharpClass.ClassName + ".cs"),
                     classData, true);
             }
             catch (Exception)
@@ -772,13 +1056,14 @@ namespace ToDoStuff.UserControls
             }
         }
 
-        private ObservableCollection<ClassProperty> CreateApiServiceClassProperties()
+        private ObservableCollectionFast<ClassProperty> CreateApiServiceClassProperties()
         {
-            ObservableCollection<ClassProperty> classProperties = new ObservableCollection<ClassProperty>();
-            ClassProperty classProperty = new ClassProperty("dbContext", "DBContext");
+            ObservableCollectionFast<ClassProperty> classProperties = new ObservableCollectionFast<ClassProperty>();
+            ClassProperty _dbContextProperty = new ClassProperty("_dbContext", "DBContext");
+            classProperties.Add(_dbContextProperty);
+            ClassProperty _loggerProperty = new ClassProperty("_logger", "private readonly ILogger<MyWorldController>");
 
-            classProperties.Add(classProperty);
-
+            classProperties.Add(_loggerProperty);
             return classProperties;
         }
 
@@ -875,7 +1160,11 @@ namespace ToDoStuff.UserControls
                     rtbUserUsings.AppendText(Environment.NewLine + "using System.Net.Http;");
                     rtbUserUsings.AppendText(Environment.NewLine + "using System.Threading.Tasks;");
                     rtbUserUsings.AppendText(Environment.NewLine + "using System.Web;");
-                    rtbUserUsings.AppendText(Environment.NewLine + "using System.Web.Http;");
+
+                    rtbUserUsings.AppendText(Environment.NewLine + "using Microsoft.AspNetCore.Diagnostics;");
+                    rtbUserUsings.AppendText(Environment.NewLine + "using Microsoft.AspNetCore.Hosting;");
+                    rtbUserUsings.AppendText(Environment.NewLine + "using Microsoft.AspNetCore.Mvc;");
+                    rtbUserUsings.AppendText(Environment.NewLine + "using Microsoft.Extensions.Logging;");
                     break;
                 case "APISERVICECLASS":
                     rtbUserUsings.AppendText(Environment.NewLine + "using My.Models;");
@@ -896,12 +1185,12 @@ namespace ToDoStuff.UserControls
         {
             try
             {
-                ObservableCollection<SQLTable> SQLTableList = (ObservableCollection<SQLTable>)lstTables.ItemsSource;
+                ObservableCollectionFast<SQLTable> SQLTableList = (ObservableCollectionFast<SQLTable>)lstTables.ItemsSource;
 
-                CSharpClass cSharpClass = new CSharpClass(txtDatabase.Text.Trim() + "_Controller");
+                CSharpClass cSharpClass = new CSharpClass("Content_Controller");
 
                 cSharpClass.CSharpClassFileSettings.Attributes.Add("[ApiController]");
-                cSharpClass.CSharpClassFileSettings.Attributes.Add("[Route(\"api/" + txtDatabase.Text.Trim() + "\")]");
+                cSharpClass.CSharpClassFileSettings.Attributes.Add("[Route(\"api/" + Convert.ToString(((SQLTable)cbDatabase.SelectedValue).Name) + "\")]");
 
                 cSharpClass.CSharpClassFileSettings.IsClassNameCamelCasing = true;
                 cSharpClass.CSharpClassFileSettings.IsIncludeNameSpace = true;
@@ -913,16 +1202,31 @@ namespace ToDoStuff.UserControls
                     cSharpClass.CSharpClassFileSettings.UserDefinedUsings.Add(item);
                 }
 
+                cSharpClass.CSharpClassFileSettings.IsIncludeParametrizedConstructor = true;
+                cSharpClass.CSharpClassFileSettings.Parameters = new ObservableCollectionFast<ClassProperty>();
+                cSharpClass.CSharpClassFileSettings.Parameters.Add(new ClassProperty("services", "IServiceProvider") { });
+                cSharpClass.CSharpClassFileSettings.Parameters.Add(new ClassProperty("logger", "ILogger<" + cSharpClass.ClassName.ToCamelCase() + ">") { });
                 cSharpClass.ClassMethods = CreateApiControllerMethods();
 
 
-                cSharpClass.ClassProperties = CreateApiServiceClassProperties();
+                StringBuilder sbContructorContent = new StringBuilder();
+                sbContructorContent.AppendLine("_dbContext = services.GetService(typeof(DBContext)) as DBContext;");
+                sbContructorContent.AppendLine("\t\t\t_logger = logger;");
+                cSharpClass.CSharpClassFileSettings.ParameterizedConstructorContent = sbContructorContent.ToString();
+
+                cSharpClass.ClassProperties = new ObservableCollectionFast<ClassProperty>();
+                ClassProperty _dbContextProperty = new ClassProperty("_dbContext", "DBContext");
+                cSharpClass.ClassProperties.Add(_dbContextProperty);
+                ClassProperty _loggerProperty = new ClassProperty("_logger", "readonly ILogger <" + cSharpClass.ClassName.ToCamelCase() + ">");
+
+                cSharpClass.ClassProperties.Add(_loggerProperty);
+
                 cSharpClass.InheritedClass = "ControllerBase";
 
                 string classData = cSharpClass.GenerateCSharpClassData(false);
 
                 FileUtility.SaveDataToFile(System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory),
-                    txtDatabase.Text.Trim(), "Controllers", cSharpClass.ClassName + ".cs"),
+                    Convert.ToString(((SQLTable)cbDatabase.SelectedValue).Name), "Controllers", cSharpClass.ClassName + ".cs"),
                     classData, true);
             }
             catch (Exception ex)
@@ -934,7 +1238,7 @@ namespace ToDoStuff.UserControls
         private List<ClassMethodModel> CreateApiControllerMethods()
         {
             List<ClassMethodModel> Methods = new List<ClassMethodModel>();
-            ObservableCollection<SQLTable> SQLTableList = (ObservableCollection<SQLTable>)lstTables.ItemsSource;
+            ObservableCollectionFast<SQLTable> SQLTableList = (ObservableCollectionFast<SQLTable>)lstTables.ItemsSource;
             List<string> methodTypes = new List<string>(new[] { "Add", "Update", "Get", "Delete", "GetAll" });
 
             foreach (var tableName in SQLTableList)
@@ -945,72 +1249,9 @@ namespace ToDoStuff.UserControls
                 Methods.Add(new GetControllerMethodModel() { TableName = (tableName.Name).ToCamelCase() }.Initialize());
                 Methods.Add(new DeleteControllerMethodModel() { TableName = (tableName.Name).ToCamelCase() }.Initialize());
                 Methods.Add(new GetAllControllerMethodModel() { TableName = (tableName.Name).ToCamelCase() }.Initialize());
+                Methods.Add(new UpdateControllerMethodModel() { TableName = (tableName.Name).ToCamelCase() }.Initialize());
                 Methods.Add(new SaveControllerMethodModel() { TableName = (tableName.Name).ToCamelCase(), TrailingLine = "#endregion " + (tableName.Name).ToCamelCase() }.Initialize());
 
-                //foreach (var mtype in methodTypes)
-                //{
-                //ClassMethodModel method = new ClassMethodModel("public", "Task<IActionResult>", "async", mtype + tableName.Name.ToCamelCase());
-
-                //string ResponseModelType = "string";
-
-                //if (mtype == "Get")
-                //    ResponseModelType = tableName.Name.ToCamelCase() + "Model";
-
-                //if (mtype == "GetAll")
-                //    ResponseModelType = "List<" + tableName.Name.ToCamelCase() + "Model>";
-
-                //if (mtype == "GetAll")
-                //    method.Attributes.Add("[HttpGet]");
-                //else
-                //    method.Attributes.Add("[HttpPost]");
-
-
-                //method.Attributes.Add("[Route(\"" + mtype + tableName.Name.ToCamelCase() + "\")]");
-
-                //sb.AppendLine("            string _rawContent = null;");
-                //sb.AppendLine("");
-                //sb.AppendLine("            var responseModel = new ResponseModel<" + ResponseModelType + ">()");
-                //sb.AppendLine("            {");
-                //sb.AppendLine("                HttpStatusCode = \"200\"");
-                //sb.AppendLine("            };");
-                //sb.AppendLine("");
-                //sb.AppendLine("            try");
-                //sb.AppendLine("            {");
-
-                //if (mtype == "GetAll")
-                //{
-                //    sb.AppendLine("                var " + tableName.Name + "Service = new " + tableName.Name.ToCamelCase() + "Service(_dbContext);");
-                //    sb.AppendLine("                responseModel = " + tableName.Name + "Service." + mtype + tableName.Name.ToCamelCase() + "Data();");
-                //}
-                //else
-                //{
-                //    sb.AppendLine("                _rawContent = await GetRawContent(_rawContent);");
-                //    sb.AppendLine("                var objPayLoad = JsonConvert.DeserializeObject<" + tableName.Name.ToCamelCase() + "Model>(_rawContent);");
-                //    sb.AppendLine("                var " + tableName.Name + "Service = new " + tableName.Name.ToCamelCase() + "Service(_dbContext);");
-                //    sb.AppendLine("                responseModel = " + tableName.Name + "Service." + mtype + tableName.Name.ToCamelCase() + "Data(objPayLoad);");
-                //}
-
-                //sb.AppendLine("            }");
-                //sb.AppendLine("            catch (Exception ex)");
-                //sb.AppendLine("            {");
-                //sb.AppendLine("                string message = \"Error while processing \";");
-                //sb.AppendLine("");
-                //sb.AppendLine("                if (!ex.Message.ToLower().Contains(\"object reference\"))");
-                //sb.AppendLine("                    message += ex.Message;");
-                //sb.AppendLine("");
-                //sb.AppendLine("                responseModel.HttpStatusCode = ((int)HttpStatusCode.BadRequest).ToString();");
-                //sb.AppendLine("                responseModel.Message = message;");
-                //sb.AppendLine("                responseModel.Reason.Add(\"ERROR\");");
-                //sb.AppendLine("                responseModel.IsSuccess = false;");
-                //sb.AppendLine("            }");
-                //sb.AppendLine("");
-                //sb.AppendLine("            return new JsonResult(responseModel);");
-
-                //method.MethodBody = sb.ToString();
-
-                //Methods.Add(method);
-
-                //}
             }
 
             return Methods;
@@ -1020,7 +1261,7 @@ namespace ToDoStuff.UserControls
         {
             StringBuilder APILinks = new StringBuilder();
 
-            ObservableCollection<SQLTable> SQLTableList = (ObservableCollection<SQLTable>)lstTables.ItemsSource;
+            ObservableCollectionFast<SQLTable> SQLTableList = (ObservableCollectionFast<SQLTable>)lstTables.ItemsSource;
             List<string> methodTypes = new List<string>(new[] { "Add", "Update", "Get", "Delete", "GetAll" });
 
             APIDocInfoModel apiDocInfoModel = new APIDocInfoModel();
@@ -1050,8 +1291,8 @@ namespace ToDoStuff.UserControls
 
                 if (!string.IsNullOrEmpty(tableName.Name))
                 {
-                    SQLConnector sqlconn = GetSQLConnector();
-                    DataSet ds = sqlconn.ColumnList(tableName.Name, txtDatabase.Text.Trim());
+                    SQLConnector sqlconn = GetSQLConnector(true);
+                    DataSet ds = sqlconn.ColumnList(tableName.Name, Convert.ToString(((SQLTable)cbDatabase.SelectedValue).Name));
 
                     if (ds != null && ds.Tables != null && ds.Tables.Count > 0)
                     {
@@ -1121,7 +1362,7 @@ namespace ToDoStuff.UserControls
             }
 
             //FileUtility.SaveDataToFile(System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory),
-            //    txtDatabase.Text.Trim(), "myworldAPILinks.txt"),
+            //    Convert.ToString(((SQLTable)cbDatabase.SelectedValue).Name), "myworldAPILinks.txt"),
             //    APILinks.ToString(), true);
 
             string Version = "V.1.6";
@@ -1130,7 +1371,7 @@ namespace ToDoStuff.UserControls
             apiDocInfoModel.Author = "Sandeep Ray";
             apiDocInfoModel.Version = Version;
             apiDocInfoModel.FilePath = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory),
-                txtDatabase.Text.Trim(), "My_World_API_Document_" + Version + ".pdf");
+                Convert.ToString(((SQLTable)cbDatabase.SelectedValue).Name), "My_World_API_Document_" + Version + ".pdf");
 
             var doc = APIDocument.CreateDocument(apiDocInfoModel);
             MigraDoc.DocumentObjectModel.IO.DdlWriter.WriteToFile(doc, "MigraDoc.mdddl");
@@ -1170,7 +1411,7 @@ namespace ToDoStuff.UserControls
                 string interfaceData = cSharpInterface.GenerateCSharpClassData(false);
 
                 FileUtility.SaveDataToFile(System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory),
-                    txtDatabase.Text.Trim(), "APIServices", "I" + cSharpInterface.ClassName + ".cs"),
+                    Convert.ToString(((SQLTable)cbDatabase.SelectedValue).Name), "APIServices", "I" + cSharpInterface.ClassName + ".cs"),
                     interfaceData, true);
 
                 CSharpClass cSharpClass = new CSharpClass(tableName.Trim().ToCamelCase() + "_API_Service");
@@ -1191,7 +1432,7 @@ namespace ToDoStuff.UserControls
                 string classData = cSharpClass.GenerateCSharpClassData(false);
 
                 FileUtility.SaveDataToFile(System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory),
-                    txtDatabase.Text.Trim(), "APIServices", cSharpClass.ClassName + ".cs"),
+                    Convert.ToString(((SQLTable)cbDatabase.SelectedValue).Name), "APIServices", cSharpClass.ClassName + ".cs"),
                     classData, true);
             }
             catch (Exception)
@@ -1258,26 +1499,75 @@ namespace ToDoStuff.UserControls
             }
             return Methods;
         }
-    }
 
-    class SQLTable
-    {
-        public string Name { get; set; }
-    }
-
-    class ContentType
-    {
-        public ContentType()
+        private void btnAddTable_Click(object sender, RoutedEventArgs e)
         {
+            foreach (SQLTable item in lstTablesEdit.SelectedItems)
+            {
+                string tableName = Convert.ToString(item.Name);
+                if (!string.IsNullOrEmpty(tableName))
+                {
+                    blockTableList.Add(tableName);
+                    lstTableFilter.Items.Refresh();
+                }
+
+            }
 
         }
-        public ContentType(string name, List<string> categories)
+
+        private void btnRemoveTable_Click(object sender, RoutedEventArgs e)
         {
-            Name = name;
-            Categories = categories;
+            if (lstTableFilter.SelectedItem != null)
+            {
+                var selectedItem = (string)lstTableFilter.SelectedItem;
+                blockTableList.Remove(selectedItem);
+                lstTableFilter.Items.Refresh();
+            }
         }
 
-        public string Name;
-        public List<string> Categories;
+        private void lstTableFilter_PreviewKeyUp(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Delete)
+            {
+                if (lstTableFilter.SelectedItem != null)
+                {
+                    string tableName = Convert.ToString(lstTableFilter.SelectedItem);
+                    blockTableList.Remove(tableName);
+                    lstTableFilter.Items.Refresh();
+                }
+            }
+        }
+
+        private void btnRemoveAllTable_Click(object sender, RoutedEventArgs e)
+        {
+            blockTableList.Clear();
+            lstTableFilter.Items.Refresh();
+        }
+
+        private void cbDatabase_DropDownOpened(object sender, EventArgs e)
+        {
+            if (cbDatabase.Items.Count <= 0)
+            {
+                SQLConnector sqlconn = GetSQLConnector();
+                DataSet ds = sqlconn.GetDatabases();
+                if (ds != null && ds.Tables != null && ds.Tables.Count > 0)
+                {
+                    ObservableCollectionFast<SQLTable> SQLTableList = new ObservableCollectionFast<SQLTable>();
+                    DataTable dt = ds.Tables[0];
+
+                    foreach (DataRow dr in dt.Rows)
+                    {
+                        string DatabaseName = dr["Database"] == DBNull.Value ? default(string) : Convert.ToString(dr["Database"]);
+
+                        SQLTable sqlTable = new SQLTable();
+                        sqlTable.Name = DatabaseName;
+                        SQLTableList.Add(sqlTable);
+                    }
+                    cbDatabase.ItemsSource = SQLTableList;
+                    cbDatabase.DisplayMemberPath = "Name";
+
+                }
+            }
+        }
     }
 }

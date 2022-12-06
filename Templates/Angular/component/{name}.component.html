@@ -1,0 +1,41 @@
+﻿<div class="row">
+    <div class="col-lg-12">
+        <div class="row">
+
+            <div class="card-img" style="width:18rem;margin-right: 1.5rem;" *ngFor="let [TABLE_NAME_S_SMALL] of [TABLE_NAME_SMALL]">
+                <div class="card-body"
+                     style="height: 265px;background: linear-gradient( rgb(122 122 122 / 50%), rgb(122 122 122 / 50%) ),  url('{{[TABLE_NAME_S_SMALL].image_url}}');background-size: cover;">
+                    <p class="card-text text-white" style="margin-top:10rem;font-size: large;">{{[TABLE_NAME_S_SMALL].Name}}</p>
+                </div>
+                <div class="card-footer">
+                    <div class="d-md-flex justify-content-between">
+                        <a class="btn" href=".#/[TABLE_NAME_SMALL]/{{[TABLE_NAME_S_SMALL].id}}/edit">Edit</a>
+                        <a class="btn" href=".#/[TABLE_NAME_SMALL]/{{[TABLE_NAME_S_SMALL].id}}">Preview</a>
+                        <a class="btn" (click)="onDelete([TABLE_NAME_S_SMALL].id)" [cModalToggle]="alertModal.id">Delete</a>
+                    </div>
+                </div>
+            </div>
+            <a class="card-img" style="width: 18rem;margin-right: 1.5rem;" href="#/create/[TABLE_NAME]">
+                <div class="card-body text-white "
+                     style="height: 265px;background: linear-gradient( rgb(122 122 122), rgb(122 122 122 / 50%) ),  url('assets/img/cards/[TABLE_NAME].png');background-size: cover;">
+                    <div class="" style="margin-top: 25%;margin-left: 25%;">
+                        <span><i class="fas fa-plus fa-10x"></i></span>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+</div>
+
+<c-modal #alertModal alignment="center" id="alertModal">
+    <c-modal-body style="background:red;">
+        <h3>Are you sure to delete the [TABLE_NAME_S_SMALL]?</h3>
+        <div class="d-md-flex justify-content-md-end">
+            <button [cModalToggle]="alertModal.id" cButton color="primary" style="margin: 20px" (click)="delete[TABLE_NAME_S]('YES')">
+                Yes
+            </button> <button [cModalToggle]="alertModal.id" cButton color="secondary" style="margin: 20px" (click)="delete[TABLE_NAME_S]('NO')">
+                No
+            </button>
+        </div>
+    </c-modal-body>
+</c-modal>

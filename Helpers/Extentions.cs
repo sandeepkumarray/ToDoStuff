@@ -46,6 +46,18 @@ namespace ToDoStuff
             }
             return sb.ToString();
         }
+        public static string RemoveSpecialCharactersExcludingSpace(this string str)
+        {
+            StringBuilder sb = new StringBuilder();
+            foreach (char c in str)
+            {
+                if ((c >= '0' && c <= '9') || (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || c == '.' || c == '_' || c == ' ')
+                {
+                    sb.Append(c);
+                }
+            }
+            return sb.ToString();
+        }
 
         public static string ToCamelCase(this string input, char separator = '_')
         {
@@ -133,7 +145,7 @@ namespace ToDoStuff
                 action(item);
         }
 
-        public static void ForEach<T>(this ObservableCollection<T> source, Action<T> action)
+        public static void ForEach<T>(this ObservableCollectionFast<T> source, Action<T> action)
         {
             foreach (T item in source)
                 action(item);
@@ -188,6 +200,62 @@ namespace ToDoStuff
                 return true;
             else
                 return false;
+        }
+        public static void AddAutoIncrmentId<T>(this IEnumerable<T> list, string propertyName)
+        {
+            int id = 1;
+            
+            foreach(var item in list)
+            {
+                SetPropertyValue(item, propertyName, id++);
+            }
+
+        }
+
+        public static void SetPropertyValue<T>(T obj, string propertyName, object value)
+        {
+            // these should be cached if possible
+            Type type = typeof(T);
+            PropertyInfo pi = type.GetProperty(propertyName);
+
+            pi.SetValue(obj, Convert.ChangeType(value, pi.PropertyType), null);
+        }
+
+
+        public static string GetDateString(this DateTime dateTime)
+        {
+            string value = "Today";
+
+            var timeSpan = DateTime.Now.Subtract(dateTime);
+
+            if (dateTime.Date == DateTime.Today)
+            {
+                value = "Today";
+            }
+            else if (dateTime.Date == DateTime.Now.AddDays(1).Date)
+            {
+                value = "Tomorrow";
+            }
+            else if (dateTime.Date == DateTime.Now.AddDays(-1).Date)
+            {
+                value = "Yesterday";
+            }
+            else if (dateTime.Month == DateTime.Now.Month && dateTime.Year == DateTime.Now.Year)
+            {
+                value = "This Month";
+                var cal = System.Globalization.DateTimeFormatInfo.CurrentInfo.Calendar;
+                var d1 = dateTime.Date.AddDays(-1 * (int)cal.GetDayOfWeek(dateTime));
+                var d2 = DateTime.Now.Date.AddDays(-1 * (int)cal.GetDayOfWeek(DateTime.Now));
+
+                if (d1 == d2)
+                    value = "This Week";
+            }
+            else if(dateTime.Year == DateTime.Now.Year)
+            {
+                value = "This Year";
+            }
+
+            return value;
         }
     }
 }

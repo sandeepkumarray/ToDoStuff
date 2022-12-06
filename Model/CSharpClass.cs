@@ -21,7 +21,7 @@ namespace ToDoStuff.Model
         public bool IsIncludePrivateField { get; set; }
         public string ClassName { get; set; }
         public string InheritedClass { get; set; }
-        public ObservableCollection<ClassProperty> ClassProperties { get; set; }
+        public ObservableCollectionFast<ClassProperty> ClassProperties { get; set; }
         public CSharpClassFileSetting CSharpClassFileSettings { get; set; }
 
         public List<ClassMethodModel> ClassMethods { get; set; }
@@ -59,7 +59,7 @@ namespace ToDoStuff.Model
             }
         }
 
-        public string GenerateCSharpClassData(bool IsUseDefaultSettings)
+        public virtual string GenerateCSharpClassData(bool IsUseDefaultSettings)
         {
             if (IsUseDefaultSettings == true)
                 GetDefaultCSharpClassFileSettings();
@@ -178,7 +178,7 @@ namespace ToDoStuff.Model
                             }
                         }
 
-                        codeFileData.AppendLine("\t\tpublic " + proptype + " " + prop.PropName);
+                        codeFileData.AppendLine("\t\t"+ prop.AccessType + " " + proptype + " " + prop.PropName);
                         codeFileData.AppendLine("\t\t{");
                         codeFileData.AppendLine("\t\t\tget { return _" + prop.PropName.FirstCharToLower() + "; }");
                         codeFileData.AppendLine("\t\t\tset");
@@ -218,7 +218,7 @@ namespace ToDoStuff.Model
                                 codeFileData.AppendLine(att.ToString());
                             }
                         }
-                        codeFileData.AppendLine("\t\tpublic " + proptype + " " + prop.PropName + (prop.AddGetterSetter ? " { get; set; }" : ";"));
+                        codeFileData.AppendLine("\t\t" + prop.AccessType + " " + proptype + " " + prop.PropName + (prop.AddGetterSetter ? prop.GetterSetterBody : ";"));
                     }
                     codeFileData.AppendLine("");
                 }
@@ -246,7 +246,7 @@ namespace ToDoStuff.Model
 
                     codeFileData.AppendLine("\t\tpublic " + ClassName + "(" + parameters + ")");
                     codeFileData.AppendLine("\t\t{");
-                    codeFileData.AppendLine("\t\t\t" + CSharpClassFileSettings.ParameterizedConstructorContent);
+                    codeFileData.AppendLine(CSharpClassFileSettings.ParameterizedConstructorContent);
                     codeFileData.AppendLine("\t\t}");
                     codeFileData.AppendLine("");
                 }
@@ -318,7 +318,7 @@ namespace ToDoStuff.Model
             return codeFileData.ToString();
         }
 
-        private string GetParametersString(List<ClassProperty> parameters)
+        public virtual string GetParametersString(List<ClassProperty> parameters)
         {
             string return_value = string.Empty;
             List<string> propList = new List<string>();
@@ -348,7 +348,7 @@ namespace ToDoStuff.Model
             IsIncludetOnPropertyChanged = false;
             IsIncludePrivateField = false;
             ClassName = default(string);
-            ClassProperties = new ObservableCollection<ClassProperty>();
+            ClassProperties = new ObservableCollectionFast<ClassProperty>();
         }
 
         private void GetDefaultCSharpClassFileSettings()
@@ -370,7 +370,7 @@ namespace ToDoStuff.Model
         public string MethodType { get; set; }
         public string MethodName { get; set; }
         public List<ClassProperty> Parameters { get; set; }
-        public ObservableCollection<ClassProperty> ClassProperties { get; set; }
+        public ObservableCollectionFast<ClassProperty> ClassProperties { get; set; }
         public List<string> Attributes { get; set; }
         public string MethodBody { get; set; }
         public bool IsForInterface { get; set; }
@@ -406,9 +406,9 @@ namespace ToDoStuff.Model
             foreach (var item in ClassProperties)
             {
                 if (item.DBDataType.In(new List<string>() { "binary", "varbinary", "tinyblob", "blob", "mediumblob", "longblob", "char byte" }))
-                    sb.AppendLine(TemplateBytes.Replace("[Table_Name]", TableName.ToLower()).Replace("[COLUMN_NAME]", item.PropName.RemoveSpecialCharacters()).Replace("[DATA_TYPE]", item.PropType).Replace("[DB_COLUMN_NAME]", item.PropName));
+                    sb.AppendLine(TemplateBytes.Replace("[Table_Name]", TableName.ToCamelCase().ToLower()).Replace("[COLUMN_NAME]", item.PropName.RemoveSpecialCharacters()).Replace("[DATA_TYPE]", item.PropType).Replace("[DB_COLUMN_NAME]", item.PropName));
                 else
-                    sb.AppendLine(Template.Replace("[Table_Name]", TableName.ToLower()).Replace("[COLUMN_NAME]", item.PropName.RemoveSpecialCharacters()).Replace("[DATA_TYPE]", item.PropType).Replace("[DB_COLUMN_NAME]", item.PropName));
+                    sb.AppendLine(Template.Replace("[Table_Name]", TableName.ToCamelCase().ToLower()).Replace("[COLUMN_NAME]", item.PropName.RemoveSpecialCharacters()).Replace("[DATA_TYPE]", item.PropType).Replace("[DB_COLUMN_NAME]", item.PropName));
             }
 
             return sb.ToString();

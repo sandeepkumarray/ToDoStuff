@@ -34,6 +34,7 @@ namespace ToDoStuff.Helpers
         {
             int reTryCounter = 0;
             HtmlWeb web = new HtmlWeb();
+
             web.PreRequest = delegate (HttpWebRequest webRequest)
             {
                 webRequest.AutomaticDecompression = DecompressionMethods.Deflate | DecompressionMethods.GZip;
@@ -45,54 +46,92 @@ namespace ToDoStuff.Helpers
             {
                 try
                 {
-                    var htmlDoc = web.Load(this.Settings.WebsiteUrl);
-
-                    log.Info("Website Loaded");
-
                     List<string> ScrapedLinkList = new List<string>();
 
-                    HtmlAgilityPack.HtmlNodeCollection nodeCollection = htmlDoc.DocumentNode.SelectNodes("//" + this.Settings.Profile.PatternToSearch);////meta[@property='og:image']
-
-                    log.Info("TypeOfData :- " + Settings.Profile.TypeOfData);
-                    if (nodeCollection != null)
-                        log.Info("Found count :-" + nodeCollection.Count);
-
-                    bool gotValue = false;
-
-                    foreach (HtmlNode td in nodeCollection)
+                    if (this.Settings.Profile.Name == "directImages")
                     {
-                        if (td.Attributes.Contains("content"))
-                        {
-                            gotValue = true;
-                            ScrapedLinkList.Add(td.Attributes["content"].Value);
-                        }
-
-                        else if (td.Attributes.Contains("src"))
-                        {
-                            gotValue = true;
-                            ScrapedLinkList.Add(td.Attributes["src"].Value);
-                        }
-
-                        else if (td.Attributes.Contains("data"))
-                        {
-                            gotValue = true;
-                            ScrapedLinkList.Add(td.Attributes["data"].Value);
-                        }
-
-                        else if (!string.IsNullOrEmpty(td.InnerHtml))
-                        {
-                            gotValue = true;
-                            ScrapedLinkList.Add(td.InnerHtml);
-                        }
+                        ScrapedLinkList.Add(this.Settings.WebsiteUrl);
                     }
-
-                    if (gotValue == false)
+                    else if (this.Settings.Profile.Name == "instagram" || this.Settings.Profile.Name == "insta")
                     {
-                        MessageBox.Show("No Values to process from URL.");
-                        log.Warn("No Values to process from URL.");
-                        return;
+                        process_Instagram_Url(web);
                     }
+                    else
+                    {
+                        var htmlDoc = web.Load(this.Settings.WebsiteUrl);
 
+                        log.Info("Website Loaded");
+                        Thread.Sleep(9999);
+                        if (this.Settings.Profile.PatternToSearch == "script")
+                        {
+                            if (this.Settings.Profile.Name == "youtube")
+                            {
+                                ScrapedLinkList = YouTubeScriptImages(htmlDoc);
+                            }
+                        }
+                        else
+                        {
+                            HtmlAgilityPack.HtmlNodeCollection nodeCollection = htmlDoc.DocumentNode.SelectNodes("//" + this.Settings.Profile.PatternToSearch);////meta[@property='og:image']
+
+                            log.Info("TypeOfData :- " + Settings.Profile.TypeOfData);
+                            if (nodeCollection != null)
+                                log.Info("Found count :-" + nodeCollection.Count);
+
+                            bool gotValue = false;
+
+                            if (String.IsNullOrEmpty(Settings.Profile.AttributeName))
+                            {
+                                foreach (HtmlNode td in nodeCollection)
+                                {
+                                    if (td.Attributes.Contains("content"))
+                                    {
+                                        gotValue = true;
+                                        ScrapedLinkList.Add(td.Attributes["content"].Value);
+                                    }
+
+                                    else if (td.Attributes.Contains("src"))
+                                    {
+                                        gotValue = true;
+                                        ScrapedLinkList.Add(td.Attributes["src"].Value);
+                                    }
+
+                                    else if (td.Attributes.Contains("data"))
+                                    {
+                                        gotValue = true;
+                                        ScrapedLinkList.Add(td.Attributes["data"].Value);
+                                    }
+
+                                    else if (!string.IsNullOrEmpty(td.InnerHtml))
+                                    {
+                                        gotValue = true;
+                                        ScrapedLinkList.Add(td.InnerHtml);
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                foreach (HtmlNode td in nodeCollection)
+                                {
+                                    if (td.Attributes.Contains(Settings.Profile.AttributeName))
+                                    {
+                                        gotValue = true;
+                                        ScrapedLinkList.Add(td.Attributes[Settings.Profile.AttributeName].Value);
+                                    }
+                                }
+
+                            }
+
+                            if (gotValue == false)
+                            {
+                                MessageBox.Show("No Values to process from URL.");
+                                log.Warn("No Values to process from URL.");
+                                return;
+                            }
+
+
+                        }
+
+                    }
                     if (isProcess)
                     {
                         switch (Settings.Profile.TypeOfData)
@@ -117,6 +156,7 @@ namespace ToDoStuff.Helpers
                         }
                     }
 
+
                     log.Info("All Files downloaded and saved.");
                     reTryCounter = 200;
 
@@ -138,6 +178,38 @@ namespace ToDoStuff.Helpers
             } while (reTryCounter < 19);
         }
 
+        private void process_Instagram_Url(HtmlWeb web)
+        {
+            try
+            {
+
+            }
+            catch (Exception ex)
+            {
+                log.Error(ex.Message);
+            }
+        }
+
+        private List<string> YouTubeScriptImages(HtmlDocument htmlDoc)
+        {
+            List<string> result = new List<string>();
+            HtmlAgilityPack.HtmlNodeCollection nodeCollection = htmlDoc.DocumentNode.SelectNodes("//" + this.Settings.Profile.PatternToSearch);////meta[@property='og:image']
+
+            if (nodeCollection != null)
+            {
+                foreach (var node in nodeCollection)
+                {
+                    if (node.InnerText.StartsWith("var ytInitialData"))
+                    {
+                        string[] parts = node.InnerText.Split('=');
+                        string jsonPart = parts[1].Trim().Substring(0, parts[1].Trim().Length - 1);
+                        JObject jsonObject = JsonConvert.DeserializeObject<JObject>(jsonPart);
+                    }
+                }
+            }
+            return result;
+
+        }
 
         private void DownloadAndSaveVideo(List<string> scrapedLinkList)
         {
@@ -412,6 +484,7 @@ namespace ToDoStuff.Helpers
 
     public class WebScrapProfile
     {
+        public string AttributeName { get; set; }
         public string PatternToSearch { get; set; }
         public string TypeOfData { get; set; }
         public string OutputFolder { get; set; }

@@ -4,12 +4,14 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:ToDoStuff.UserControls"
+             xmlns:helpers="clr-namespace:ToDoStuff.Helpers"
              mc:Ignorable="d" Background="Fuchsia"  
              xmlns:nlog ="clr-namespace:NlogViewer;assembly=NlogViewer"
              d:DesignHeight="750" d:DesignWidth="800">
     <Grid>
         <Grid.Resources>
             <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+            <helpers:IndexToBoolConverter x:Key="IndexToBoolConverter"/>
         </Grid.Resources>
 
         <Grid.ColumnDefinitions>
@@ -21,11 +23,7 @@
             <RowDefinition Height="10"/>
             <RowDefinition Height="40"/>
             <RowDefinition Height="120"/>
-            <RowDefinition Height="40"/>
-            <RowDefinition Height="40"/>
-            <RowDefinition Height="40"/>
-            <RowDefinition Height="40"/>
-            <RowDefinition Height="40"/>
+            <RowDefinition Height="auto"/>
             <RowDefinition Height="40"/>
             <RowDefinition Height="400"/>
         </Grid.RowDefinitions>
@@ -85,29 +83,50 @@
 
         </Grid>
 
+        <Grid Grid.Column="0" Grid.Row="3" Grid.ColumnSpan="3">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="250"/>
+                <ColumnDefinition Width="20"/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="40"/>
+                <RowDefinition Height="40"/>
+                <RowDefinition Height="40"/>
+                <RowDefinition Height="40"/>
+                <RowDefinition Height="40"/>
+                <RowDefinition Height="40"/>
+                <RowDefinition Height="40"/>
+            </Grid.RowDefinitions>
+            <TextBlock Grid.Column="0" Grid.Row="0" FontWeight="DemiBold" FontSize="20" FontFamily="Segoe UI" Foreground="White" Text="Profile" Margin="5"></TextBlock>
+            <ComboBox Grid.Column="2" Grid.Row="0" Margin="5" Name="cbProfiles" SelectionChanged="cbProfiles_SelectionChanged">
+            </ComboBox>
 
+            <TextBlock Grid.Column="0" Grid.Row="1" FontWeight="DemiBold" FontSize="20" FontFamily="Segoe UI" Foreground="White" Text="Type Of Data to scrape" Margin="5"></TextBlock>
+            <ComboBox Grid.Column="2" Grid.Row="1" Margin="5" Name="cbTypeOfData">
+            </ComboBox>
 
-        <TextBlock Grid.Column="0" Grid.Row="3" FontWeight="DemiBold" FontSize="20" FontFamily="Segoe UI" Foreground="White" Text="Profile" Margin="5"></TextBlock>
-        <ComboBox Grid.Column="2" Grid.Row="3" Margin="5" Name="cbProfiles" SelectionChanged="cbProfiles_SelectionChanged">           
-        </ComboBox>
+            <TextBlock Grid.Column="0" Grid.Row="2" FontWeight="DemiBold" FontSize="20" FontFamily="Segoe UI" Foreground="White" Text="Pattern To Search" Margin="5"></TextBlock>
+            <TextBox Grid.Column="2" Grid.Row="2" Margin="5" Name="txtPatternToSearch"></TextBox>
 
-        <TextBlock Grid.Column="0" Grid.Row="4" FontWeight="DemiBold" FontSize="20" FontFamily="Segoe UI" Foreground="White" Text="Type Of Data to scrape" Margin="5"></TextBlock>
-        <ComboBox Grid.Column="2" Grid.Row="4" Margin="5" Name="cbTypeOfData">
-           
-        </ComboBox>
+            <TextBlock Grid.Column="0" Grid.Row="3" FontWeight="DemiBold" FontSize="20" FontFamily="Segoe UI" Foreground="White" Text="Output Folder Path" Margin="5"></TextBlock>
+            <TextBox Grid.Column="2" Grid.Row="3" Margin="5" Name="txtOutputPath"></TextBox>
 
-        <TextBlock Grid.Column="0" Grid.Row="5" FontWeight="DemiBold" FontSize="20" FontFamily="Segoe UI" Foreground="White" Text="Pattern To Search" Margin="5"></TextBlock>
-        <TextBox Grid.Column="2" Grid.Row="5" Margin="5" Name="txtPatternToSearch"></TextBox>
-        
-        <TextBlock Grid.Column="0" Grid.Row="6" FontWeight="DemiBold" FontSize="20" FontFamily="Segoe UI" Foreground="White" Text="Output Folder Path" Margin="5"></TextBlock>
-        <TextBox Grid.Column="2" Grid.Row="6" Margin="5" Name="txtOutputPath"></TextBox>
+            <TextBlock Grid.Column="0" Grid.Row="4" FontWeight="DemiBold" FontSize="20" FontFamily="Segoe UI" Foreground="White" Text="Create SubFolder(each url)" Margin="5"></TextBlock>
+            <CheckBox Grid.Column="2" Grid.Row="4" Margin="5" Name="txtSubFolder"></CheckBox>
 
-        <TextBlock Grid.Column="0" Grid.Row="7" FontWeight="DemiBold" FontSize="20" FontFamily="Segoe UI" Foreground="White" Text="Create SubFolder(each url)" Margin="5"></TextBlock>
-        <CheckBox Grid.Column="2" Grid.Row="7" Margin="5" Name="txtSubFolder"></CheckBox>
+            <TextBlock Grid.Column="0" Grid.Row="5" FontWeight="DemiBold" FontSize="20" FontFamily="Segoe UI" Foreground="White" Text="Element Attribute" Margin="5"></TextBlock>
+            <TextBox Grid.Column="2" Grid.Row="5" Margin="5" Name="txtEleAttr"></TextBox>
 
-        <StackPanel Grid.Column="2" Grid.Row="8" Orientation="Horizontal" HorizontalAlignment="Right">
+        </Grid>
+
+        <StackPanel Grid.Column="2" Grid.Row="4" Orientation="Horizontal" HorizontalAlignment="Right">
             <Button Grid.Column="2" Grid.Row="8" FontWeight="DemiBold" FontSize="20" FontFamily="Segoe UI" Content="Save Profile" Width="150" 
                 HorizontalAlignment="Right" Margin="5" Name="btnSaveProfile" Click="btnSaveProfile_Click"></Button>
+
+            <Button Grid.Column="2" Grid.Row="8" FontWeight="DemiBold" FontSize="20" FontFamily="Segoe UI" Content="Update Profile" Width="150" 
+                HorizontalAlignment="Right" Margin="5" Name="btnUpdateProfile" Click="btnUpdateProfile_Click"
+                    IsEnabled="{Binding ElementName=cbProfiles, Path=SelectedIndex, Converter={StaticResource IndexToBoolConverter}}"></Button>
             
             <Button Grid.Column="2" Grid.Row="8" FontWeight="DemiBold" FontSize="20" FontFamily="Segoe UI" Content="Execute" Width="150" 
                 HorizontalAlignment="Right" Margin="5" Name="btnProcess" Click="btnProcess_Click"></Button>
@@ -120,7 +139,7 @@
 
 
         </StackPanel>
-        <ScrollViewer  Margin="5"  Grid.Column="3" Grid.Row="9" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
+        <ScrollViewer  Margin="5"  Grid.Column="3" Grid.Row="5" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
             <nlog:NlogViewer x:Name="logCtrl" Margin="5"  Grid.Column="3" Grid.Row="8" />
         </ScrollViewer>
     </Grid>

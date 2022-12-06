@@ -23,9 +23,9 @@ namespace ToDoStuff.Model
             this.AccessType = "public";
             this.ReturnType = "string";
             this.MethodType = null;
-            this.MethodName = "Add" + TableName + "Data";
+            this.MethodName = "Add" + TableName.ToCamelCase() + "Data";
             this.Parameters = new List<ClassProperty>();
-            ClassProperty propData = new ClassProperty("Data", TableName + "Model");
+            ClassProperty propData = new ClassProperty("Data", TableName.ToCamelCase() + "Model");
             this.Parameters.Add(propData);
 
             StringBuilder sbInsert = new StringBuilder();
@@ -40,7 +40,7 @@ namespace ToDoStuff.Model
 
             string columns = string.Join("`,`", from n in ClassProperties select n.PropName);
             string values = string.Join(",", from n in ClassProperties select "@" + n.PropName.RemoveSpecialCharacters());
-            string CommandText = "INSERT INTO `" + TableName + "`(`" + columns + "`) VALUES(" + values + ")";
+            string CommandText = "INSERT INTO `" + TableName.ToCamelCaseWithSeparator() + "`(`" + columns + "`) VALUES(" + values + ")";
             sbInsert.AppendLine("\t\t\t\tdbContext.cmd.CommandText = \"" + CommandText + "\";");
             foreach (var prop in ClassProperties)
             {

@@ -27,7 +27,12 @@ namespace ToDoStuff.Model
             this.AccessType = this.IsForInterface ? "" : "public";
             this.ReturnType = "ResponseModel<string>";
             this.MethodType = null;
-            this.MethodName = "Save" + TableName.Trim().Substring(0, TableName.Trim().Length - 1).ToCamelCase();
+            this.MethodName = "Save" + TableName.Trim();
+
+            var hasTrailingS = TableName.Trim().Substring(TableName.Trim().Length - 1, 1).ToLower() == "s" ? true : false;
+            if (hasTrailingS)
+                this.MethodName = "Save" + TableName.Trim().Substring(0, TableName.Trim().Length - 1).ToCamelCase();
+
             this.Parameters = new List<ClassProperty>();
             ClassProperty propData = new ClassProperty("Data", TableName + "Model");
             this.Parameters.Add(propData);

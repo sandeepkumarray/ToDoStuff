@@ -33,7 +33,7 @@ namespace ToDoStuff.Model
             this.Parameters.Add(propData);
 
             this.Attributes.Add("[HttpGet]");
-            this.Attributes.Add("[Route(\"" + "GetAll" + TableName + "/{userId}\")]");
+            this.Attributes.Add("[Route(\"" + TableName + "/" + "GetAll" + TableName + "/{userId}\")]");
 
             StringBuilder sb = new StringBuilder();
 

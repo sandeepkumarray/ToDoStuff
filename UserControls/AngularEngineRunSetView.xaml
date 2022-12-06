@@ -1,0 +1,36 @@
+﻿<UserControl x:Class="ToDoStuff.UserControls.AngularEngineRunSetView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:ToDoStuff.UserControls"
+             mc:Ignorable="d" Background="DarkGoldenrod"
+             d:DesignHeight="850" d:DesignWidth="800">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="200"/>
+            <ColumnDefinition Width="20"/>
+            <ColumnDefinition/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="1"/>
+            <RowDefinition Height="40"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="40"/>
+        </Grid.RowDefinitions>
+        <TextBlock Grid.Column="0" Grid.Row="1" FontWeight="DemiBold" FontSize="20" FontFamily="Segoe UI" Foreground="White" Text="Settings Json" Margin="5"></TextBlock>
+        <RichTextBox Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="7" Width="auto" Margin="5" Height="auto" 
+                     Name="rtbSettingsJson" Foreground="Black" FontFamily="Segoe UI" FontSize="12">
+            <RichTextBox.Resources>
+                <Style TargetType="{x:Type Paragraph}">
+                    <Setter Property="Margin" Value="0"/>
+                </Style>
+            </RichTextBox.Resources>
+        </RichTextBox>
+
+        <StackPanel Grid.Column="2" Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right">
+            <Button Grid.Column="2" Grid.Row="9" FontWeight="DemiBold" FontSize="20" FontFamily="Segoe UI" Content="Process" Width="150" 
+                HorizontalAlignment="Right" Margin="5" Name="btnProcess" Click="btnProcess_Click"></Button>
+        </StackPanel>
+    </Grid>
+</UserControl>

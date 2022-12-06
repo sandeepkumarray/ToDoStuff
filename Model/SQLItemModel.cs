@@ -18,4 +18,27 @@ namespace ToDoStuff
             Columns = new List<DataColumn>();
         }
     }
+
+
+    public class SQLTable
+    {
+        public string Name { get; set; }
+        public bool IsSelected { get; set; }
+    }
+
+    class ContentType
+    {
+        public ContentType()
+        {
+
+        }
+        public ContentType(string name, List<string> categories)
+        {
+            Name = name;
+            Categories = categories;
+        }
+
+        public string Name;
+        public List<string> Categories;
+    }
 }

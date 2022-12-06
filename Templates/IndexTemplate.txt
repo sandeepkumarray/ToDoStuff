@@ -13,20 +13,20 @@
                 @foreach (var item in Model)
                 {
                     <div class="card-img" style="width: 18rem;margin-right: 1.5rem;">
-                        <div class="card-body" style="height: 265px;background: url('/assets/img/cards/[TABLE_NAME].png');background-size: cover;">
+                        <div class="card-body" style="height: 265px;background: linear-gradient( rgb(122 122 122 / 50%), rgb(122 122 122 / 50%) ),  url('@item.image_url');background-size: cover;">
                             <p class="card-text text-white text-value-lg" style="margin-top:10rem">@item.Name</p>
                         </div>
                         <div class="card-footer">
                             <div class="d-md-flex justify-content-between">
                                 <a class="btn" asp-action="View[TABLE_NAME]" asp-route-id="@item.id">Edit</a>
-                                <a class="btn" asp-action="Preview" asp-route-id="@item.id">Preview</a>
+                                <a class="btn" asp-action="Preview[TABLE_NAME]" asp-route-id="@item.id">Preview</a>
                                 <a class="btn" asp-action="Delete" asp-route-id="@item.id">Delete</a>
                             </div>
                         </div>
                     </div>
                 }
                 <a class="card-img" style="width: 18rem;margin-right: 1.5rem;" href="~/CreateItem?content_type=[TABLE_NAME]">
-                    <div class="card-body text-white " style="height: 265px;background: url('/assets/img/cards/[TABLE_NAME].png');background-size: cover;">
+                    <div class="card-body text-white " style="height: 265px;background: linear-gradient( rgb(122 122 122), rgb(122 122 122 / 50%) ),  url('/assets/img/cards/[TABLE_NAME].png');background-size: cover;">
                         <div class="d-md-flex justify-content-center">
                             <span><i class="fas fa-plus fa-10x"></i></span>
                         </div>

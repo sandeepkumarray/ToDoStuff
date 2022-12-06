@@ -1,0 +1,457 @@
+@model My.World.Web.ViewModel.[TABLE_NAME]ViewModel
+
+@{
+    ViewData["Title"] = "View[TABLE_NAME]";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Breadcrumb"] = "[TABLE_NAME] / View";
+}
+
+<link href="~/css/quill.snow.css" rel="stylesheet" />
+<link href="~/css/quill.mention.min.css" rel="stylesheet" />
+<link href="~/vendors/dropzone/dropzone.css" rel="stylesheet" />
+<style>
+    .editorNative {
+        min-height: 2em;
+        max-height: 8em;
+        max-width: 50em;
+        margin: 0;
+        margin-bottom: 2px;
+        border: 1px solid #dedede;
+        padding: 1px 0;
+        color: black;
+        font-weight: 400;
+        font-size: 1.125rem;
+        font-family: Arial, Helvetica, sans-serif;
+        line-height: 2rem;
+        background: white;
+        border-bottom: 1px solid grey;
+    }
+</style>
+<div class="c-body">
+    <main class="c-main">
+        <div class="container-fluid">
+            <div class="fade-in">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="card">
+                            <div class="card-header"><strong>[TABLE_NAME_S]</strong> Details</div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-3 col m3">
+                                        <div class="card">
+                                            <div class="card-header">CATEGORIES</div>
+                                            <div class="card-body" style="padding:0;">
+                                                <ul id="categoriesTab" class="nav flex-column nav-pills me-3 collection content-tabs" role="tablist">
+                                                    @foreach (var cat in Model.ContentTemplate.categories.OrderBy(o => o.Order))
+                                                    {
+                                                        var active_class = cat.Order == 1 ? "active" : "";
+                                                        var panelName = cat.Label + "_panel";
+                                                        var tabPanelID = "tab_" + cat.Label + "_panel";
+                                                        <li class="nav-item collection-item tab" id="@tabPanelID">
+                                                            <a class="d-flex justify-content-between align-items-center @active_class" data-toggle="pill" href="#@panelName" role="tab" aria-controls="home">
+                                                                <div>
+                                                                    <span>@Html.Raw(@cat.Icon)</span>
+                                                                    <span style="margin-left:20px">@cat.Label</span>
+                                                                </div>
+                                                                <span class="badge badge-pill badge-danger"> 0 %</span>
+                                                            </a>
+                                                        </li>
+                                                    }
+                                                </ul>
+                                            </div>
+                                        </div>
+                                        <div class="card">
+                                            <div class="card-header">REFERENCES</div>
+                                            <div class="card-body" style="padding:0;">
+                                                <ul id="referenceTab" class="nav flex-column nav-pills me-3 collection content-tabs" role="tablist">
+                                                    @foreach (var cat in Model.ContentTemplate.references.OrderBy(o => o.Order))
+                                                    {
+                                                        var active_class = cat.Order == 1 ? "active" : "";
+                                                        var panelName = cat.Label + "_panel";
+                                                        var tabPanelID = "tab_" + cat.Label + "_panel";
+                                                        <li class="nav-item collection-item tab" id="@tabPanelID">
+                                                            <a class="d-flex justify-content-between align-items-center @active_class" data-toggle="pill" href="#@panelName" role="tab" aria-controls="home">
+                                                                <div>
+                                                                    <span>@Html.Raw(@cat.Icon)</span>
+                                                                    <span style="margin-left:20px">@cat.Label</span>
+                                                                </div>
+                                                                <span class="badge badge-pill badge-danger"> 0 %</span>
+                                                            </a>
+                                                        </li>
+                                                    }
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-8">
+                                        <div class="align-items-start">
+                                            <div id="tabContent" class="tab-content">
+                                                @foreach (var cat in Model.ContentTemplate.categories)
+                                                {
+                                                    var active_class = cat.Order == 1 ? "active" : "";
+                                                    var panelName = cat.Label + "_panel";
+
+                                                    <div class="tab-pane @active_class" id="@panelName" role="tabpanel">
+                                                        <div class="card">
+                                                            <div class="card-header d-flex justify-content-between align-items-center" style="background:@Model.headerBackgroundColor">
+                                                                <span>@cat.Label</span>
+                                                                <span>@Html.Raw(@cat.Icon)</span>
+                                                            </div>
+                                                            <div class="card-body" style="padding:10px;">
+                                                                @foreach (var att in cat.Attributes)
+                                                                {
+                                                                    if (att.is_active)
+                                                                    {
+                                                                    <div class="form-group row">
+                                                                        <label class="col-md-3 col-form-label" for="text-input">@att.field_label</label>
+                                                                        <div class="col-md-9">
+                                                                            @if (att.field_name.ToLower() != "name" && att.field_type.In(new List<string>() { "binary", "varbinary", "tinyblob", "blob", "mediumblob", "longblob", "char byte", "char", "varchar", "tinytext", "text", "mediumtext", "longtext", "set", "enum", "nchar", "national char", "nvarchar", "national varchar", "character varying" }))
+                                                                                {
+                                                                                <div id="@att.field_name" class="form-control editorNative"></div>
+                                                                                }
+                                                                                else if (att.field_name.ToLower() == "universe")
+                                                                                {
+                                                                                <select id="ddlUniverseList" class="form-control" style="min-width:150px"
+                                                                                        asp-items="@(new SelectList(@Model.UniversesList, "id", "name" , Model.[TABLE_NAME_SMALL]Model.Universe))"
+                                                                                        onchange="UniverseSelected();">
+                                                                                </select>
+                                                                                }
+                                                                                else if (att.field_type.In(new List<string>
+                                                                                    () { "int", "integer", "smallint unsigned", "mediumint", "bigint", "int unsigned", "integer unsigned", "bit" }))
+                                                                                    {
+                                                                                    <input id="[TABLE_NAME_SMALL]Model_@att.field_name" class="form-control" type="number" />
+                                                                                    }
+                                                                                    else if (att.field_type.In(new List<string>
+                                                                                        () { "tinyint" }))
+                                                                                        {
+                                                                                        <input id="[TABLE_NAME_SMALL]Model_@att.field_name" class="form-control" type="checkbox" />
+                                                                                        }
+                                                                                        else
+                                                                                        {
+                                                                                        <input id="[TABLE_NAME_SMALL]Model_@att.field_name" class="form-control" />
+
+                                                                                        }
+                                                                        </div>
+                                                                    </div>
+                                                                    }
+                                                                }
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                }
+
+
+                                                @foreach (var cat in Model.ContentTemplate.references)
+                                                {
+                                                    var active_class = cat.Order == 1 ? "active" : "";
+                                                    var panelName = cat.Label + "_panel";
+
+                                                    <div class="tab-pane @active_class" id="@panelName" role="tabpanel">
+                                                        <div class="card">
+                                                            <div class="card-header d-flex justify-content-between align-items-center" style="background:cadetblue">
+                                                                <span>@cat.Label</span>
+                                                                <span>@Html.Raw(@cat.Icon)</span>
+                                                            </div>
+                                                            <div class="card-body" style="padding:10px;">
+                                                                @foreach (var att in cat.Attributes)
+                                                                {
+                                                                    if (att.is_active)
+                                                                    {
+                                                                        if (att.field_name.ToLower() == "gallery")
+                                                                        {
+                                                                            <div class="mb-3">
+                                                                                <label class="form-label">Uploaded Images</label>
+
+                                                                                <div class="row">
+                                                                                    @foreach (var contentObject in Model.ContentObjectModelList)
+                                                                                    {
+                                                                                        <div class="card-img" style="width: 18rem;margin-right: 1.5rem;">
+                                                                                            <div class="card-body img-container" style="height: 265px;background: url('@contentObject.file_url');background-size: cover;">
+                                                                                                <a class="remove-image" style="display: inline;"
+                                                                                                   asp-controller="[TABLE_NAME_SMALL]" asp-action="DeleteAttachment" asp-route-objectId="@contentObject.object_id" asp-route-objectName="@contentObject.object_name">&#215;</a>
+                                                                                            </div>
+                                                                                        </div>
+                                                                                    }
+                                                                                </div>
+                                                                            </div>
+
+                                                                            <div class="mb-3">
+                                                                                <label class="form-label" for="exampleFormControlInput1">Upload Images...</label>
+                                                                                <div>
+                                                                                    @using (Html.BeginForm("UploadAttachment", "[TABLE_NAME_SMALL]", FormMethod.Post, new { @class = "", @name = "myDropzone", id = "myDropzone", @enctype = "multipart/form-data" }))
+                                                                                    {
+                                                                                    <div class="dz-message needsclick">
+                                                                                        <button type="button" class="dz-button">Drop files here or click to upload.</button><br />
+                                                                                        <span class="note needsclick"></span>
+                                                                                    </div>
+                                                                                    <div class="fallback">
+                                                                                        <input name="postedfiles" type="file" multiple />
+                                                                                    </div>
+                                                                                    <div>
+                                                                                        @*<input type="submit" id="Submit" name="Submit" class="btn btn-success m-t-5" value="Submit" />*@
+                                                                                    </div>
+                                                                                    }
+
+                                                                                    <a href="#" id="saveAttchbtn" name="saveAttchbtn" class="btn btn-primary">Upload</a>
+                                                                                </div>
+                                                                            </div>
+                                                                        }
+                                                                    }
+
+                                                                }
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-footer">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<div id="preview-template" style="display: none;">
+    <div class="dz-preview dz-file-preview">
+        <div class="dz-image">
+            <img data-dz-thumbnail />
+        </div>
+        <div class="dz-details">
+            <div class="dz-size">
+                <span data-dz-size />
+            </div>
+            <div class="dz-filename">
+                <span data-dz-name />
+            </div>
+        </div>
+        <div class="dz-progress">
+            <span class="dz-upload" data-dz-uploadprogress />
+        </div>
+        <div class="dz-error-message">
+            <span data-dz-errormessage />
+        </div>
+        <div class="dz-success-mark">
+            <svg width="54px" height="54px" viewBox="0 0 54 54" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+                 xmlns:sketch="http://www.bohemiancoding.com/sketch/ns">
+                <!-- Generator: Sketch 3.2.1 (9971) - http://www.bohemiancoding.com/sketch -->
+                <title>Check</title>
+                <desc>Created with Sketch.</desc>
+                <defs />
+                <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" sketch:type="MSPage">
+                    <path d="M23.5,31.8431458 L17.5852419,25.9283877 C16.0248253,24.3679711 13.4910294,24.366835 11.9289322,25.9289322 C10.3700136,27.4878508 10.3665912,30.0234455 11.9283877,31.5852419 L20.4147581,40.0716123 C20.5133999,40.1702541 20.6159315,40.2626649 20.7218615,40.3488435 C22.2835669,41.8725651 24.794234,41.8626202 26.3461564,40.3106978 L43.3106978,23.3461564 C44.8771021,21.7797521 44.8758057,19.2483887 43.3137085,17.6862915 C41.7547899,16.1273729 39.2176035,16.1255422 37.6538436,17.6893022 L23.5,31.8431458 Z M27,53 C41.3594035,53 53,41.3594035 53,27 C53,12.6405965 41.3594035,1 27,1 C12.6405965,1 1,12.6405965 1,27 C1,41.3594035 12.6405965,53 27,53 Z" id="Oval-2" stroke-opacity="0.198794158" stroke="#747474" fill-opacity="0.816519475" fill="#FFFFFF" sketch:type="MSShapeGroup" />
+                </g>
+            </svg>
+        </div>
+        <div class="dz-error-mark">
+            <svg width="54px" height="54px" viewBox="0 0 54 54" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+                 xmlns:sketch="http://www.bohemiancoding.com/sketch/ns">
+                <!-- Generator: Sketch 3.2.1 (9971) - http://www.bohemiancoding.com/sketch -->
+                <title>error</title>
+                <desc>Created with Sketch.</desc>
+                <defs />
+                <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" sketch:type="MSPage">
+                    <g id="Check-+-Oval-2" sketch:type="MSLayerGroup" stroke="#747474" stroke-opacity="0.198794158" fill="#FFFFFF" fill-opacity="0.816519475">
+                        <path d="M32.6568542,29 L38.3106978,23.3461564 C39.8771021,21.7797521 39.8758057,19.2483887 38.3137085,17.6862915 C36.7547899,16.1273729 34.2176035,16.1255422 32.6538436,17.6893022 L27,23.3431458 L21.3461564,17.6893022 C19.7823965,16.1255422 17.2452101,16.1273729 15.6862915,17.6862915 C14.1241943,19.2483887 14.1228979,21.7797521 15.6893022,23.3461564 L21.3431458,29 L15.6893022,34.6538436 C14.1228979,36.2202479 14.1241943,38.7516113 15.6862915,40.3137085 C17.2452101,41.8726271 19.7823965,41.8744578 21.3461564,40.3106978 L27,34.6568542 L32.6538436,40.3106978 C34.2176035,41.8744578 36.7547899,41.8726271 38.3137085,40.3137085 C39.8758057,38.7516113 39.8771021,36.2202479 38.3106978,34.6538436 L32.6568542,29 Z M27,53 C41.3594035,53 53,41.3594035 53,27 C53,12.6405965 41.3594035,1 27,1 C12.6405965,1 1,12.6405965 1,27 C1,41.3594035 12.6405965,53 27,53 Z" id="Oval-2" sketch:type="MSShapeGroup" />
+                    </g>
+                </g>
+            </svg>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/quill.js"></script>
+    <script src="~/js/quill.mention.min.js"></script>
+    <script src="~/js/[TABLE_NAME]Editor.js"></script>
+    <script src="~/js/common.js"></script>
+    <script src="~/vendors/dropzone/dropzone.js"></script>
+
+    <script type="text/javascript">
+
+        [PROP_FUNC_JS]
+
+        $(document).ready(function () {
+            [PROP_CALL_JS]
+
+            Dropzone.autoDiscover = false;
+            Dropzone.options.myDropzone = false;
+
+            $('#myDropzone').dropzone({
+                previewTemplate: document.querySelector('#preview-template').innerHTML,
+                paramName: "files",
+                autoProcessQueue: false,
+                uploadMultiple: true,
+                parallelUploads: 100,
+                maxFiles: 100,
+                maxFilesize: 100,//max file size in MB,
+                addRemoveLinks: true,
+                dictResponseError: 'Server not Configured',
+                thumbnail: function (file, dataUrl) {
+                    if (file.previewElement) {
+                        file.previewElement.classList.remove("dz-file-preview");
+                        var images = file.previewElement.querySelectorAll("[data-dz-thumbnail]");
+                        for (var i = 0; i < images.length; i++) {
+                            var thumbnailElement = images[i];
+                            thumbnailElement.alt = file.name;
+                            thumbnailElement.src = dataUrl;
+                        }
+                        setTimeout(function () { file.previewElement.classList.add("dz-image-preview"); }, 1);
+                    }
+                },
+                acceptedFiles: ".png,.jpg,.gif,.bmp,.jpeg,.pdf",// use this to restrict file type
+                init: function () {
+                    var self = this;
+                    // config
+                    self.options.addRemoveLinks = true;
+                    self.options.dictRemoveFile = "Delete";
+                    //New file added
+                    self.on("addedfile", function (file) {
+                        console.log('new file added ', file);
+                        $('.dz-success-mark').hide();
+                        $('.dz-error-mark').hide();
+                    });
+                    // Send file starts
+                    self.on("sending", function (file) {
+                        console.log('upload started', file);
+                        $('.meter').show();
+                    });
+
+                    // File upload Progress
+                    self.on("totaluploadprogress", function (progress) {
+                        console.log("progress ", progress);
+                        $('.roller').width(progress + '%');
+                    });
+
+                    self.on("queuecomplete", function (progress) {
+                        $('.meter').delay(999).slideUp(999);
+                        console.log("Files uploaded");
+                        var locUrL = location.href.replace('#Gallery_panel', '') + "#Gallery_panel";
+                        window.location.href = locUrL;
+                        location.reload();
+                    });
+                    self.on("complete", function (file) {
+                        self.removeFile(file);
+                    });
+                    // On removing file
+                    self.on("removedfile", function (file) {
+                        console.log(file);
+                    });
+
+                    $('#saveAttchbtn').on("click", function (e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        // Validate form here if needed
+
+                        if (self.getQueuedFiles().length > 0) {
+                            self.processQueue();
+
+                        } else {
+                            self.uploadFiles([]);
+                            $('#myDropzone').submit();
+                        }
+
+                    });
+
+                    self.on("successmultiple", function (files, response) {
+                        // Gets triggered when the files have successfully been sent.
+                        // Redirect user or notify of success.
+
+                    });
+                }
+            });
+
+            $('#myDropzone').addClass("dropzone");
+
+            if (window.location.hash) {
+                var idPrefix = "tab_";
+                var panelName = window.location.hash.replace('#', '');
+                var liElement = $('#' + idPrefix + panelName);
+                var tabContentEle = $('#' + panelName);
+
+                if (liElement != undefined) {
+                    $('#tabContent').find('div').removeClass('active');
+                    $('#categoriesTab').find('li').find('a').removeClass('active');
+                    $('#referenceTab').find('li').find('a').removeClass('active');
+                    liElement.find('a').addClass('active');
+                    tabContentEle.addClass('active');
+                    console.log(liElement);
+                }
+            }
+        });
+
+        function postSaveData(type, value) {
+            var url = '/[TABLE_NAME]/Save' + type;
+
+            $.ajax({
+                type: 'POST',
+                url: url,
+                data: '{ [TABLE_NAME_S]ID : "' + @ViewData["[TABLE_NAME_S]ID"] + '", value : "' + value + '" }',
+                    dataType: "json",
+                        contentType: "application/json; charset=utf-8",
+                            success: function (result) {
+                                if (result.isSuccess) {
+
+                                }
+                                else {
+                                    $.alert({
+                                        title: 'Error',
+                                        icon: 'fa fa-warning',
+                                        type: 'red',
+                                        content: '<hr>' + result.message + '</hr>',
+                                    });
+                                }
+                            },
+            error: function (error) {
+                $.alert({
+                    title: 'Error',
+                    icon: 'fa fa-warning',
+                    type: 'red',
+                    content: '<hr>' + error + '</hr>',
+                });
+            }
+        });
+        }
+
+
+        function postSaveEditorData(type, value) {
+            var url = '/[TABLE_NAME]/' + @ViewData["[TABLE_NAME_S]ID"] + '/Save' + type;
+
+            $.ajax({
+                type: 'POST',
+                url: url,
+                data: value,
+                async: false,
+                contentType: "application/json; charset=utf-8",
+                success: function (result) {
+                    if (result.isSuccess) {
+
+                    }
+                    else {
+                        $.alert({
+                            title: 'Error',
+                            icon: 'fa fa-warning',
+                            type: 'red',
+                            content: '<hr>' + result.message + '</hr>',
+                        });
+                    }
+                },
+                error: function (error) {
+                    $.alert({
+                        title: 'Error',
+                        icon: 'fa fa-warning',
+                        type: 'red',
+                        content: '<hr>' + error + '</hr>',
+                    });
+                }
+            });
+        }
+
+    </script>
+}

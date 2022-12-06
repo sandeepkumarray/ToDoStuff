@@ -19,6 +19,8 @@ namespace ToDoStuff.Model
         public string PropType { get; set; }
 
         public string DBDataType { get; set; }
+        public string DB_ColumnType { get; set; }
+        public string DB_ColumnKey { get; set; }
 
         public bool IsXmlElement { get; set; }
 
@@ -29,15 +31,18 @@ namespace ToDoStuff.Model
 
         public bool IsGenericListType { get; set; }
         public bool AddGetterSetter { get; set; }
+        public string AccessType { get; set; } = "public";
+        public string GetterSetterBody { get; set; } = " { get; set; }";
 
         public Dictionary<List<string>, string> DBTypetoCSharpType;
+        public Dictionary<List<string>, string> DBTypetoAngularType;
 
         public ClassProperty()
         {
             Init();
         }
 
-        private void Init()
+        public virtual void Init()
         {
             PropTypeList = new List<string>();
             PropTypeList.Add("bool");
@@ -89,14 +94,32 @@ namespace ToDoStuff.Model
             DBTypetoCSharpType.Add(new List<string>() { "geometry2" }, "Data.Spatial.DbGeometry");
             DBTypetoCSharpType.Add(new List<string>() { "geometry2" }, "Data.Spatial.DbGeography");
 
+            DBTypetoAngularType = new Dictionary<List<string>, string>();
+            DBTypetoAngularType.Add(new List<string>() { "bool", "boolean", "bit" }, "boolean");
+            DBTypetoAngularType.Add(new List<string>() { "bool", "boolean", "bit" }, "boolean");
+            DBTypetoAngularType.Add(new List<string>() { "tinyint" }, "boolean");
+            DBTypetoAngularType.Add(new List<string>() { "tinyint unsigned" }, "byte");
+            DBTypetoAngularType.Add(new List<string>() { "smallint", "year" }, "number");
+            DBTypetoAngularType.Add(new List<string>() { "int", "integer", "smallint unsigned", "mediumint" }, "number");
+            DBTypetoAngularType.Add(new List<string>() { "bigint", "int unsigned", "integer unsigned", "bit" }, "number");
+            DBTypetoAngularType.Add(new List<string>() { "float" }, "Single");
+            DBTypetoAngularType.Add(new List<string>() { "double", "real" }, "number");
+            DBTypetoAngularType.Add(new List<string>() { "decimal", "numeric", "dec", "fixed", "bigint unsigned", "float unsigned", "double unsigned", "serial" }, "number");
+            DBTypetoAngularType.Add(new List<string>() { "date", "timestamp", "datetime" }, "Date");
+            DBTypetoAngularType.Add(new List<string>() { "datetimeoffset" }, "Date");
+            DBTypetoAngularType.Add(new List<string>() { "time" }, "Date");
+            DBTypetoAngularType.Add(new List<string>() { "char", "varchar", "tinytext", "text", "mediumtext", "longtext", "set", "enum", "nchar", "national char", "nvarchar", "national varchar", "character varying" }, "string");
+            DBTypetoAngularType.Add(new List<string>() { "binary", "varbinary", "tinyblob", "blob", "mediumblob", "longblob", "char byte" }, "string");
+            DBTypetoAngularType.Add(new List<string>() { "geometry2" }, "Data.Spatial.DbGeometry");
+            DBTypetoAngularType.Add(new List<string>() { "geometry2" }, "Data.Spatial.DbGeography");
         }
 
         internal string GetCsharpTypeFromDBType(string dataType)
         {
             string returnValue = "string";
-            foreach(var item in DBTypetoCSharpType)
+            foreach (var item in DBTypetoCSharpType)
             {
-                foreach(var dbt in item.Key)
+                foreach (var dbt in item.Key)
                 {
                     if (dbt == dataType)
                         returnValue = item.Value;
@@ -105,11 +128,29 @@ namespace ToDoStuff.Model
             return returnValue;
         }
 
+        internal string GetAngularTypeFromDBType(string dataType)
+        {
+            string returnValue = "any";
+            foreach (var item in DBTypetoAngularType)
+            {
+                foreach (var dbt in item.Key)
+                {
+                    if (dbt == dataType)
+                        returnValue = item.Value;
+                }
+            }
+            return returnValue;
+        }
         public ClassProperty(string propName, string propType)
             : this()
         {
             PropName = propName;
             PropType = propType;
+        }
+        public ClassProperty(string propName, string propType, string accessType)
+           : this(propName, propType)
+        {
+            AccessType = accessType;
         }
     }
 }

@@ -1,0 +1,247 @@
+﻿<div class="c-body">
+    <main class="c-main">
+        <div class="container-fluid">
+            <div class="fade-in">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="card">
+                            <div class="card-header"><strong>[TABLE_NAME_S]</strong> Details</div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-3 col m3">
+                                        <div class="card">
+                                            <div class="card-header">CATEGORIES</div>
+                                            <div class="card-body" style="padding:0;">
+                                                <c-nav class="flex-column nav-pills collection content-tabs"
+                                                    #categoriesTab>
+                                                    <c-nav-item class="collection-item tab"
+                                                        *ngFor="let category of ContentTemplate.categories; let index = index">
+                                                        <a class="d-flex justify-content-between align-items-center"
+                                                            id="{{category.label}}_panel" [active]="category.is_active"
+                                                            [cTabContent]="tabContent" [routerLink]
+                                                            *ngIf="category.attributes.length > 0" [tabPaneIdx]="index">
+                                                            <div>
+                                                                <span [innerHTML]="category.icon"></span>
+                                                                <span style="margin-left:20px">{{category.label}}</span>
+                                                            </div>
+                                                            <c-badge color="danger" shape="rounded-pill"> 0 %</c-badge>
+                                                        </a>
+                                                    </c-nav-item>
+                                                </c-nav>
+                                            </div>
+                                        </div>
+                                        <div class="card">
+                                            <div class="card-header">REFERENCES</div>
+                                            <div class="card-body" style="padding:0;">
+                                                <ul id="referenceTab"
+                                                    class="nav flex-column nav-pills collection content-tabs"
+                                                    role="tablist">
+                                                    <li class="nav-item collection-item tab"
+                                                        *ngFor="let reference of ContentTemplate.references">
+                                                        <a class="d-flex justify-content-between align-items-center"
+                                                            id="{{reference.label}}_panel" [cTabContent]="tabContent"
+                                                            [routerLink] [tabPaneIdx]="reference.order">
+                                                            <div>
+                                                                <span [innerHTML]="reference.icon"></span>
+                                                                <span
+                                                                    style="margin-left:20px">{{reference.label}}</span>
+                                                            </div>
+                                                            <span class="badge badge-pill badge-danger"> 0 %</span>
+                                                        </a>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="align-items-start">
+                                            <c-tab-content #tabContent="cTabContent" class="tab-content">
+                                                <c-tab-pane class="tab-pane " id="{{category.label}}_tabpane"
+                                                    *ngFor="let category of ContentTemplate.categories">
+                                                    <div class="card">
+                                                        <div class="card-header d-flex justify-content-between align-items-center"
+                                                            [style.background]="headerBackgroundColor">
+                                                            {{category.label}}
+                                                            <span [innerHTML]="category.icon"></span>
+                                                        </div>
+                                                        <div class="card-body" style="padding:10px;">
+                                                            <div *ngFor="let att of category.attributes">
+                                                                <div class="form-group row" *ngIf="att.is_active">
+                                                                    <div class="mb-3">
+                                                                        <label class="col-form-label"
+                                                                            for="text-input">{{att.field_label}}</label>
+                                                                        <quill-editor
+                                                                            *ngIf="Constants.VarcharList.indexOf(att.field_type) > -1 && att.field_name.toLowerCase() != 'name'"
+                                                                            class="content-editor"
+                                                                            [placeholder]="att.help_text"
+                                                                            [modules]="modules" #editor
+                                                                            [(ngModel)]="[TABLE_NAME_S_SMALL]Dic[att.field_name]"
+                                                                            [id]="att.field_name"
+                                                                            style="max-height: 400px;"
+                                                                            (onBlur)="onQuillBlur($event, att.field_name)"
+                                                                            [styles]="{ height: '150px'}">
+                                                                        </quill-editor>
+                                                                        <input id="[TABLE_NAME_SMALL]Model_{{att.field_name}}"
+                                                                            [value]="[TABLE_NAME_S_SMALL]Dic[att.field_name]"
+                                                                            class="form-control" type="number"
+                                                                            (blur)="onBlur($event, att.field_name)"
+                                                                            *ngIf="Constants.IntList.indexOf(att.field_type) > -1" />
+                                                                        <input id="[TABLE_NAME_SMALL]Model_{{att.field_name}}"
+                                                                            [ngModel]="Constants.convertStringToNNumber([TABLE_NAME_S_SMALL]Dic[att.field_name]) == 1 ? true : Constants.convertStringToNNumber([TABLE_NAME_S_SMALL]Dic[att.field_name]) == 0 ? false : null"
+                                                                            class="form-check-input mt-0"
+                                                                            type="checkbox" style="margin: 15px ;padding: 15px;"
+                                                                            (change)="checkValue($event, att.field_name)"
+                                                                            *ngIf="Constants.TinyintList.indexOf(att.field_type) > -1" />
+                                                                        <input id="[TABLE_NAME_SMALL]Model_{{att.field_name}}"
+                                                                            [value]="[TABLE_NAME_S_SMALL]Dic[att.field_name]"
+                                                                            class="form-control"
+                                                                            (blur)="onBlur($event, att.field_name)"
+                                                                            *ngIf="Constants.TinyintList.indexOf(att.field_type) < 0 && Constants.IntList.indexOf(att.field_type) < 0 && Constants.VarcharList.indexOf(att.field_type) < 0 || att.field_name.toLowerCase() == 'name'" />
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </c-tab-pane>
+                                                <c-tab-pane class="tab-pane " id="{{reference.label}}_tabpane"
+                                                    *ngFor="let reference of ContentTemplate.references">
+                                                    <div class="card">
+                                                        <div class="card-header d-flex justify-content-between align-items-center"
+                                                            [style.background]="headerBackgroundColor">
+                                                            {{reference.label}}
+                                                            <span [innerHTML]="reference.icon"></span>
+                                                        </div>
+                                                        <div class="card-body" style="padding:10px;">
+                                                            <div>
+                                                                <div class="mb-3">
+                                                                    <label class="form-label">Uploaded Images</label>
+                                                                    <div class="row" style="padding-top: 15px;" *ngFor="let cObject of ContentObjectList">
+                                                                        <div class="card-img"                                                                            
+                                                                            style="width: 18rem;margin-right: 1.5rem;">
+                                                                            <div class="card-body img-container"
+                                                                                style="height: 265px;background: url('{{cObject.image_url}}');background-size: cover;">
+                                                                                <a class="remove-image"
+                                                                                    style="display: inline;" (click)="deleteContentObject(cObject.object_id)">×</a>
+                                                                            </div>                                                                           
+                                                                        </div>
+                                                                        <div class="col"> 
+                                                                            <div class="row" style="padding-bottom: 10px;">
+                                                                            Name is {{cObject.object_name}}
+                                                                        </div>
+                                                                            <div class="row" style="padding-bottom: 10px;">
+                                                                                Size is {{cObject.size}}
+                                                                            </div>
+                                                                        </div>
+
+                                                                    </div>
+                                                                </div>
+                                                                <div class="mb-3">
+                                                                    <div class="row">
+                                                                        <h2><label class="form-label"> Only
+                                                                                {{remainingSize}} is left for content
+                                                                                upload.</label></h2>
+                                                                    </div>
+                                                                </div>
+                                                                <div>
+                                                                    <label cLabel for="formFileLg">upload images</label>
+                                                                    <input cFormControl id="formFileLg" sizing="lg"
+                                                                        placeholder="Upload File" type="file"
+                                                                        (change)="addImage($event)" />
+                                                                </div>
+                                                                <div>
+                                                                    <button id="saveAttchbtn" name="saveAttchbtn"
+                                                                        class="btn btn-primary"
+                                                                        (click)="uploadImage()">Upload</button>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </c-tab-pane>
+                                            </c-tab-content>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3 col m3 l">
+                                        <div class="card">
+                                            <div class="card-header">ACTIONS</div>
+                                            <div class="card-body" style="padding:0;">
+                                                <ul id="categoriesTab"
+                                                    class="nav flex-column nav-pills collection content-tabs"
+                                                    role="tablist">
+                                                    <li class="nav-item collection-item tab">
+                                                        <a (click)="expandAll(tabContent)" style="cursor: pointer;"
+                                                            class="d-flex justify-content-between align-items-center">
+                                                            <div><span>
+                                                                    <i class="material-icons left"
+                                                                        translate="no">format_line_spacing</i></span>
+                                                                <span style="margin-left:20px">Expand all
+                                                                    categories</span>
+                                                            </div>
+                                                        </a>
+                                                    </li>
+                                                    <li class="nav-item collection-item tab">
+                                                        <a class="d-flex justify-content-between align-items-center"
+                                                            [routerLink]="['/[TABLE_NAME_SMALL]',id]"
+                                                            [queryParams]="{debug: true}" fragment="Gallery_panel">
+                                                            <div>
+                                                                <span>
+                                                                    <i class="material-icons left"
+                                                                        translate="no">business</i></span>
+                                                                <span style="margin-left:20px">view this [TABLE_NAME_S_SMALL]</span>
+                                                            </div>
+                                                        </a>
+                                                    </li>
+                                                    <li class="nav-item collection-item tab">
+                                                        <a class="d-flex justify-content-between align-items-center">
+                                                            <div>
+                                                                <span>
+                                                                    <i class="material-icons left"
+                                                                        translate="no">share</i></span>
+                                                                <span style="margin-left:20px">share this
+                                                                    [TABLE_NAME_S_SMALL]</span>
+                                                            </div>
+                                                        </a>
+                                                    </li>
+                                                    <li class="nav-item collection-item tab">
+                                                        <a class="d-flex justify-content-between align-items-center">
+                                                            <div><span>
+                                                                    <i class="material-icons left"
+                                                                        translate="no">history</i></span>
+                                                                <span style="margin-left:20px">view change</span>
+                                                            </div>
+                                                        </a>
+                                                    </li>
+                                                    <li class="nav-item collection-item tab">
+                                                        <a class="d-flex justify-content-between align-items-center">
+                                                            <div><span>
+                                                                    <i class="material-icons left"
+                                                                        translate="no">archive</i></span>
+                                                                <span style="margin-left:20px">Archive page</span>
+                                                            </div>
+                                                        </a>
+                                                    </li>
+                                                    <li class="nav-item collection-item tab">
+                                                        <a class="d-flex justify-content-between align-items-center">
+                                                            <div><span>
+                                                                    <i class="material-icons left"
+                                                                        translate="no">delete</i></span>
+                                                                <span style="margin-left:20px">delete this
+                                                                    [TABLE_NAME_S_SMALL]</span>
+                                                            </div>
+                                                        </a>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+                            <div class="card-footer">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>

@@ -1,0 +1,8 @@
+﻿
+CREATE PROCEDURE `login_User`(
+IN `p_username` VARCHAR(350), 
+IN `p_encrypted_password` VARCHAR(200)
+)
+BEGIN
+SELECT * FROM users where username = p_username and encrypted_password = p_encrypted_password;
+END

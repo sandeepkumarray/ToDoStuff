@@ -22,21 +22,21 @@ namespace ToDoStuff.Model
         {
             base.Initialize();
             this.AccessType = "public";
-            this.ReturnType = "List<" + TableName + "Model>";
+            this.ReturnType = "List<" + TableName.ToCamelCase() + "Model>";
             this.MethodType = null;
-            this.MethodName = "GetAll" + TableName + "ForUserID";
+            this.MethodName = "GetAll" + TableName.ToCamelCase() + "ForUserID";
             this.Parameters = new List<ClassProperty>();
             ClassProperty propData = new ClassProperty("userId", "long");
             this.Parameters.Add(propData);
             StringBuilder sbSelectAll = new StringBuilder();
-            sbSelectAll.AppendLine("\t\t\tList<" + TableName + "Model> _return_value = null;");
+            sbSelectAll.AppendLine("\t\t\tList<" + TableName.ToCamelCase() + "Model> _return_value = null;");
             sbSelectAll.AppendLine("\t\t\ttry");
             sbSelectAll.AppendLine("\t\t\t{");
 
             sbSelectAll.AppendLine("\t\t\t\tdbContext.cmd = new MySqlCommand();");
             sbSelectAll.AppendLine("\t\t\t\tdbContext.cmd.Connection = dbContext.GetConnection();");
 
-            string CommandText = "SELECT * FROM `" + TableName + "` where user_id = @user_id;";
+            string CommandText = "SELECT * FROM `" + TableName.ToCamelCaseWithSeparator() + "` where user_id = @user_id;";
 
             sbSelectAll.AppendLine("\t\t\t\tdbContext.cmd.CommandText = \"" + CommandText + "\";");
 
@@ -45,14 +45,25 @@ namespace ToDoStuff.Model
             sbSelectAll.AppendLine("\t\t\t\tDataSet ds = dbContext.ExecuteDataSet(dbContext.cmd);");
             sbSelectAll.AppendLine("\t\t\t\tif (ds != null && ds.Tables != null && ds.Tables.Count > 0)");
             sbSelectAll.AppendLine("\t\t\t\t{");
-            sbSelectAll.AppendLine("\t\t\t\t\t_return_value = new List<" + TableName + "Model>();");
+            sbSelectAll.AppendLine("\t\t\t\t\t_return_value = new List<" + TableName.ToCamelCase() + "Model>();");
             sbSelectAll.AppendLine("\t\t\t\t\tDataTable dt = ds.Tables[0];");
             sbSelectAll.AppendLine("\t\t\t\t");
             sbSelectAll.AppendLine("\t\t\t\t\tforeach (DataRow dr in dt.Rows)");
             sbSelectAll.AppendLine("\t\t\t\t\t{");
-            sbSelectAll.AppendLine("\t\t\t\t\t\t" + TableName + "Model " + TableName.ToLower() + " = new " + TableName + "Model();");
+            sbSelectAll.AppendLine("\t\t\t\t\t\t" + TableName.ToCamelCase() + "Model " + TableName.ToCamelCase().ToLower() + " = new " + TableName.ToCamelCase() + "Model();");
             sbSelectAll.AppendLine(CreateDataSetToModel());
-            sbSelectAll.AppendLine("\t\t\t\t\t\t_return_value.Add(" + TableName.ToLower() + ");");
+
+            sbSelectAll.AppendLine("");
+            sbSelectAll.AppendLine("\t\t\t\t\t\tvar contentObjectList = new ContentObjectDAL(dbContext).GetAllContentObjectAttachments(" + TableName.ToCamelCase().ToLower() + ".id, \"" + TableName.ToCamelCase().ToLower() + "\");");
+            sbSelectAll.AppendLine("\t\t\t\t\t\tif (contentObjectList != null && contentObjectList.Count > 0)");
+            sbSelectAll.AppendLine("\t\t\t\t\t\t{");
+            sbSelectAll.AppendLine("\t\t\t\t\t\t    var first = contentObjectList[0];");
+            sbSelectAll.AppendLine("\t\t\t\t\t\t    " + TableName.ToCamelCase().ToLower() + ".object_id = first.object_id;");
+            sbSelectAll.AppendLine("\t\t\t\t\t\t    " + TableName.ToCamelCase().ToLower() + ".object_name = first.object_name;");
+            sbSelectAll.AppendLine("\t\t\t\t\t\t}");
+            sbSelectAll.AppendLine("");
+
+            sbSelectAll.AppendLine("\t\t\t\t\t\t_return_value.Add(" + TableName.ToCamelCase().ToLower() + ");");
             sbSelectAll.AppendLine("\t\t\t\t\t}");
             sbSelectAll.AppendLine("\t\t\t\t}");
 

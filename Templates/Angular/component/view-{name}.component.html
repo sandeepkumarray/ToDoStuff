@@ -1,0 +1,99 @@
+﻿<div class="c-body">
+    <main class="c-main">
+        <div class="container-fluid">
+            <div class="fade-in">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="card">
+                            <div class="card-header"><strong>[TABLE_NAME_S]</strong> Details</div>
+                            <div class="card-body">
+                                <div class="align-items-start" *ngIf="contentAvailable == true">
+                                    <div class="tab-content">
+                                        <div *ngFor="let category of ContentTemplate.categories">
+                                            <div id="{{category.label}}_panel" *ngIf="category.attributes.length > 0">
+
+                                                <div class="card">
+                                                    <div class="card-header d-flex justify-content-between align-items-center"
+                                                        [style.background]="headerBackgroundColor">
+                                                        <span>{{category.label}}</span>
+                                                        <span [innerHTML]="category.icon"></span>
+                                                    </div>
+                                                    <div class="card-body" style="padding:10px;">
+                                                        <div *ngFor="let att of category.attributes">
+                                                            <div class="form-group row" *ngIf="att.is_active">
+                                                                <label class="col-md-3 col-form-label"
+                                                                    for="text-input">{{att.field_label}}</label>
+                                                                <div class="col-md-9"
+                                                                    *ngIf="Constants.VarcharList.indexOf(att.field_type) > -1">
+                                                                    <div id="[TABLE_NAME_SMALL]Model_{{att.field_name}}"
+                                                                        [innerHtml]="[TABLE_NAME_S_SMALL]Dic[att.field_name]"
+                                                                        class="form-control" readonly></div>
+                                                                </div>
+
+                                                                <div class="col-md-9"
+                                                                    *ngIf="Constants.IntList.indexOf(att.field_type) > -1">
+                                                                    <div id="[TABLE_NAME_SMALL]Model_{{att.field_name}}"
+                                                                        [innerHtml]="[TABLE_NAME_S_SMALL]Dic[att.field_name]"
+                                                                        class="form-control" type="number" readonly ></div>
+                                                                </div>
+
+                                                                <div class="col-md-9"
+                                                                    *ngIf="Constants.TinyintList.indexOf(att.field_type) > -1">
+                                                                    <input id="[TABLE_NAME_SMALL]Model_{{att.field_name}}"
+                                                                           [ngModel]="Constants.convertStringToNNumber([TABLE_NAME_S_SMALL]Dic[att.field_name]) == 1 ? true : Constants.convertStringToNNumber([TABLE_NAME_S_SMALL]Dic[att.field_name]) == 0 ? false : null"
+                                                                           style="margin: 15px ;padding: 15px;"
+                                                                           class="form-check-input mt-0" type="checkbox" disabled="true" />
+                                                                </div>
+
+                                                                <div class="col-md-9"
+                                                                    *ngIf="Constants.TinyintList.indexOf(att.field_type) < 0 && Constants.IntList.indexOf(att.field_type) < 0 && Constants.VarcharList.indexOf(att.field_type) < 0">
+                                                                    <div id="[TABLE_NAME_SMALL]Model_{{att.field_name}}"
+                                                                        [innerHtml]="[TABLE_NAME_S_SMALL]Dic[att.field_name]"
+                                                                        class="form-control" readonly></div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <section id="{{category.label}}_panel"
+                                            *ngFor="let category of ContentTemplate.references">
+                                            <div class="card">
+                                                <div class="card-header d-flex justify-content-between align-items-center"
+                                                    style="background:cadetblue">
+                                                    <span>{{category.label}}</span>
+                                                    <span [innerHTML]="category.icon"></span>
+                                                </div>
+                                                <div class="card-body" style="padding:10px;">
+                                                    <div *ngFor="let att of category.attributes">
+                                                        <div class="form-group row"
+                                                            *ngIf="att.is_active && att.field_name.toLowerCase() == 'gallery'">
+                                                            <div class="mb-3">
+                                                                <label class="form-label">Uploaded Images</label>
+                                                                <div class="row">
+                                                                    <div class="card-img"
+                                                                        *ngFor="let contentObject of ContentObjectList"
+                                                                        style="width: 18rem; margin-right: 1.0rem;margin-top: 1.0rem;margin-left:0.5rem;">
+                                                                        <div class="card-body img-container"
+                                                                            style="height: 265px;background: url('{{contentObject.image_url}}');background-size: cover;">
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </section>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>

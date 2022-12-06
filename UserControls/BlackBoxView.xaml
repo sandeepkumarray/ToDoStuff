@@ -7,53 +7,84 @@
              mc:Ignorable="d" Background="DarkMagenta"
              d:DesignHeight="450" d:DesignWidth="800">
     <Grid>
-        <Grid.Resources>
-            <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
-        </Grid.Resources>
+        <TabControl Background="Transparent">
+            <TabItem Header="View one">
+                <Grid>
+                    <Grid.Resources>
+                        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+                    </Grid.Resources>
 
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="250"/>
-            <ColumnDefinition Width="20"/>
-            <ColumnDefinition/>
-        </Grid.ColumnDefinitions>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="10"/>
-            <RowDefinition Height="40"/>
-            <RowDefinition Height="40"/>
-            <RowDefinition Height="40"/>
-            <RowDefinition Height="40"/>
-            <RowDefinition Height="40"/>
-            <RowDefinition Height="40"/>
-            <RowDefinition Height="40"/>
-            <RowDefinition Height="40"/>
-            <RowDefinition Height="400"/>
-        </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="250"/>
+                        <ColumnDefinition Width="20"/>
+                        <ColumnDefinition/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="10"/>
+                        <RowDefinition Height="40"/>
+                        <RowDefinition Height="40"/>
+                        <RowDefinition Height="40"/>
+                        <RowDefinition Height="40"/>
+                        <RowDefinition Height="40"/>
+                        <RowDefinition Height="40"/>
+                        <RowDefinition Height="40"/>
+                        <RowDefinition Height="40"/>
+                        <RowDefinition Height="400"/>
+                    </Grid.RowDefinitions>
 
-        <TextBlock Grid.Column="0" Grid.Row="1" FontWeight="DemiBold" FontSize="20" FontFamily="Segoe UI" 
+                    <TextBlock Grid.Column="0" Grid.Row="1" FontWeight="DemiBold" FontSize="20" FontFamily="Segoe UI" 
                    Foreground="White" Text="Base Path" Margin="5"></TextBlock>
-        <TextBox Grid.Column="2" Grid.Row="1" Margin="5" Name="txtBasePath"></TextBox>
+                    <TextBox Grid.Column="2" Grid.Row="1" Margin="5" Name="txtBasePath"></TextBox>
 
-        <TextBlock Grid.Column="0" Grid.Row="2" FontWeight="DemiBold" FontSize="20" FontFamily="Segoe UI" 
+                    <TextBlock Grid.Column="0" Grid.Row="2" FontWeight="DemiBold" FontSize="20" FontFamily="Segoe UI" 
                    Foreground="White" Text="From" Margin="5"></TextBlock>
-        <TextBox Grid.Column="2" Grid.Row="2" Margin="5" Name="txtFrom" Width="50" HorizontalAlignment="Left"></TextBox>
+                    <TextBox Grid.Column="2" Grid.Row="2" Margin="5" Name="txtFrom" Width="50" HorizontalAlignment="Left"></TextBox>
 
-        <TextBlock Grid.Column="0" Grid.Row="3" FontWeight="DemiBold" FontSize="20" FontFamily="Segoe UI" 
+                    <TextBlock Grid.Column="0" Grid.Row="3" FontWeight="DemiBold" FontSize="20" FontFamily="Segoe UI" 
                    Foreground="White" Text="To" Margin="5"></TextBlock>
-        <TextBox Grid.Column="2" Grid.Row="3" Margin="5" Name="txtTo" Width="50" HorizontalAlignment="Left"></TextBox>
+                    <TextBox Grid.Column="2" Grid.Row="3" Margin="5" Name="txtTo" Width="50" HorizontalAlignment="Left"></TextBox>
 
-        <TextBlock Grid.Column="0" Grid.Row="4" FontWeight="DemiBold" FontSize="20" FontFamily="Segoe UI" 
+                    <TextBlock Grid.Column="0" Grid.Row="4" FontWeight="DemiBold" FontSize="20" FontFamily="Segoe UI" 
                    Foreground="White" Text="Post Fix" Margin="5"></TextBlock>
-        <TextBox Grid.Column="2" Grid.Row="4" Margin="5" Name="txtPostfix" Width="50" HorizontalAlignment="Left"></TextBox>
-        
-        <TextBlock Grid.Column="0" Grid.Row="5" FontWeight="DemiBold" FontSize="20" FontFamily="Segoe UI" Foreground="White" Text="File Path" Margin="2"></TextBlock>
-        <TextBox Grid.Column="2" Grid.Row="5" Margin="2" Name="txtFilePath"></TextBox>
-        
-        <StackPanel Grid.Column="2" Grid.Row="8" Orientation="Horizontal" HorizontalAlignment="Right">
-            <Button Grid.Column="2" Grid.Row="8" FontWeight="DemiBold" FontSize="20" FontFamily="Segoe UI" Content="Generate" Width="150" 
+                    <TextBox Grid.Column="2" Grid.Row="4" Margin="5" Name="txtPostfix" Width="50" HorizontalAlignment="Left"></TextBox>
+
+                    <TextBlock Grid.Column="0" Grid.Row="5" FontWeight="DemiBold" FontSize="20" FontFamily="Segoe UI" Foreground="White" Text="File Path" Margin="2"></TextBlock>
+                    <TextBox Grid.Column="2" Grid.Row="5" Margin="2" Name="txtFilePath"></TextBox>
+
+                    <StackPanel Grid.Column="2" Grid.Row="8" Orientation="Horizontal" HorizontalAlignment="Right">
+                        <Button Grid.Column="2" Grid.Row="8" FontWeight="DemiBold" FontSize="20" FontFamily="Segoe UI" Content="Generate" Width="150" 
                 HorizontalAlignment="Right" Margin="5" Name="btnGenerate" Click="btnGenerate_Click"></Button>
 
-            <Button Grid.Column="2" Grid.Row="8" FontWeight="DemiBold" FontSize="20" FontFamily="Segoe UI" Content="Execute" Width="150" 
+                        <Button Grid.Column="2" Grid.Row="8" FontWeight="DemiBold" FontSize="20" FontFamily="Segoe UI" Content="Execute" Width="150" 
                 HorizontalAlignment="Right" Margin="5" Name="btnProcess" Click="btnProcess_Click"></Button>
-        </StackPanel>
+                    </StackPanel>
+                </Grid>
+            </TabItem>
+            <TabItem Header="View Two">
+                <Grid>
+                    <Grid.Resources>
+                        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+                    </Grid.Resources>
+                    <Grid.ColumnDefinitions>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="40"/>
+                        <RowDefinition Height="40"/>
+                        <RowDefinition Height="300"/>
+                    </Grid.RowDefinitions>
+
+                    <Label Grid.Row="0" Grid.Column="0">Output</Label>
+
+                    <RichTextBox Name="rtbResult" Grid.Row="2" Grid.Column="0">
+
+                    </RichTextBox>
+
+                    <StackPanel Grid.Column="2" Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right">
+                        <Button Grid.Column="2" Grid.Row="8" FontWeight="DemiBold" FontSize="20" FontFamily="Segoe UI" Content="Execute" Width="150" 
+                HorizontalAlignment="Right" Margin="5" Name="btnExecute" Click="btnExecute_Click"></Button>
+                    </StackPanel>
+                </Grid>
+            </TabItem>
+        </TabControl>
     </Grid>
 </UserControl>

@@ -24,9 +24,9 @@ namespace ToDoStuff.Model
             this.AccessType = "public";
             this.ReturnType = "string";
             this.MethodType = null;
-            this.MethodName = "Delete" + TableName + "Data";
+            this.MethodName = "Delete" + TableName.ToCamelCase() + "Data";
             this.Parameters = new List<ClassProperty>();
-            ClassProperty propData = new ClassProperty("Data", TableName + "Model");
+            ClassProperty propData = new ClassProperty("Data", TableName.ToCamelCase() + "Model");
             this.Parameters.Add(propData);
 
             StringBuilder sbDelete = new StringBuilder();
@@ -37,7 +37,7 @@ namespace ToDoStuff.Model
             sbDelete.AppendLine("\t\t\t\tdbContext.cmd = new MySqlCommand();");
             sbDelete.AppendLine("\t\t\t\tdbContext.cmd.Connection = dbContext.GetConnection();");
 
-            string CommandText = "DELETE FROM `" + TableName + "` WHERE id = @id";
+            string CommandText = "DELETE FROM `" + (TableName).ToCamelCaseWithSeparator() + "` WHERE id = @id";
 
             sbDelete.AppendLine("\t\t\t\tdbContext.cmd.CommandText = \"" + CommandText + "\";");
             sbDelete.AppendLine("\t\t\t\tdbContext.AddInParameter(dbContext.cmd, \"@id\", Data.id);");

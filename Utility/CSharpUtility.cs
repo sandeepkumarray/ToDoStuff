@@ -15,7 +15,7 @@ namespace ToDoStuff
         {
             cSharpClass = new CSharpClass();
             cSharpClass.ClassName = ClassName;
-            cSharpClass.ClassProperties = new ObservableCollection<ClassProperty>(ClassProperties);
+            cSharpClass.ClassProperties = new ObservableCollectionFast<ClassProperty>(ClassProperties);
             cSharpClass.GenerateCSharpClassFile(true);
         }
     }

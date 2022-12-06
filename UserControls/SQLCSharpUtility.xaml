@@ -4,10 +4,12 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:ToDoStuff.UserControls"
-             mc:Ignorable="d" Height="auto" Width="800" Background="DarkOrange">
+             xmlns:helpers="clr-namespace:ToDoStuff.Helpers"
+             mc:Ignorable="d" Height="auto" Width="850" Background="DarkOrange">
     <Grid>
         <Grid.Resources>
             <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+            <helpers:IndexToBoolConverter x:Key="IndexToBoolConverter"/>
         </Grid.Resources>
 
         <Grid.ColumnDefinitions>
@@ -17,36 +19,67 @@
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition Height="10"/>
-            <RowDefinition Height="40"/>
-            <RowDefinition Height="40"/>
-            <RowDefinition Height="40"/>
-            <RowDefinition Height="40"/>
-            <RowDefinition Height="40"/>
-            <RowDefinition Height="40"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="*"/>
             <RowDefinition Height="340"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="40"/>
             <RowDefinition Height="40"/>
         </Grid.RowDefinitions>
-        <TextBlock Grid.Column="0" Grid.Row="1" FontWeight="DemiBold" FontSize="20" FontFamily="Segoe UI" Foreground="White" Text="Select DB Type" Margin="5"></TextBlock>
-        <ComboBox Grid.Column="2" Grid.Row="1" Margin="5">
-            <ComboBoxItem Content="My SQL"></ComboBoxItem>
-        </ComboBox>
+        <Grid Grid.Column="0" Grid.Row="1" Grid.ColumnSpan="3">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="200"/>
+                <ColumnDefinition Width="20"/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="1"/>
+                <RowDefinition Height="40"/>
+                <RowDefinition Height="40"/>
+                <RowDefinition Height="40"/>
+                <RowDefinition Height="40"/>
+                <RowDefinition Height="40"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="40"/>
+            </Grid.RowDefinitions>
+            <TextBlock Grid.Column="0" Grid.Row="1" FontWeight="DemiBold" FontSize="20" FontFamily="Segoe UI" Foreground="White" Text="Select DB Type" Margin="5"></TextBlock>
+            <ComboBox Grid.Column="2" Grid.Row="1" Margin="5">
+                <ComboBoxItem Content="My SQL"></ComboBoxItem>
+            </ComboBox>
 
-        <TextBlock Grid.Column="0" Grid.Row="2" FontWeight="DemiBold" FontSize="20" FontFamily="Segoe UI"  Foreground="White"  Text="Enter Server" Margin="5"></TextBlock>
-        <TextBox Grid.Column="2" Grid.Row="2" Margin="5" Name="txtServer">localhost</TextBox>
+            <TextBlock Grid.Column="0" Grid.Row="2" FontWeight="DemiBold" FontSize="20" FontFamily="Segoe UI"  Foreground="White"  Text="Enter Server" Margin="5"></TextBlock>
+            <TextBox Grid.Column="2" Grid.Row="2" Margin="5" Name="txtServer">localhost</TextBox>
 
-        <TextBlock Grid.Column="0" Grid.Row="3" FontWeight="DemiBold" FontSize="20" FontFamily="Segoe UI"  Foreground="White"  Text="Enter Username" Margin="5"></TextBlock>
-        <TextBox Grid.Column="2" Grid.Row="3" Margin="5" Name="txtUsername">root</TextBox>
+            <TextBlock Grid.Column="0" Grid.Row="3" FontWeight="DemiBold" FontSize="20" FontFamily="Segoe UI"  Foreground="White"  Text="Enter Username" Margin="5"></TextBlock>
+            <TextBox Grid.Column="2" Grid.Row="3" Margin="5" Name="txtUsername">root</TextBox>
 
-        <TextBlock Grid.Column="0" Grid.Row="4"  FontWeight="DemiBold" FontSize="20" FontFamily="Segoe UI" Foreground="White"  Text="Enter Password" Margin="5"></TextBlock>
-        <TextBox Grid.Column="2" Grid.Row="4" Margin="5" Name="txtPassword">dbuser</TextBox>
+            <TextBlock Grid.Column="0" Grid.Row="4"  FontWeight="DemiBold" FontSize="20" FontFamily="Segoe UI" Foreground="White"  Text="Enter Password" Margin="5"></TextBlock>
+            <TextBox Grid.Column="2" Grid.Row="4" Margin="5" Name="txtPassword">root@mysql22</TextBox>
 
-        <TextBlock Grid.Column="0" Grid.Row="5" FontWeight="DemiBold" FontSize="20" FontFamily="Segoe UI"  Foreground="White"  Text="Enter database" Margin="5"></TextBlock>
-        <TextBox Grid.Column="2" Grid.Row="5" Margin="5" Name="txtDatabase">my_book</TextBox>
+            <TextBlock Grid.Column="0" Grid.Row="5" FontWeight="DemiBold" FontSize="20" FontFamily="Segoe UI"  Foreground="White"  Text="Enter database" Margin="5"></TextBlock>
+            <ComboBox Grid.Column="2" Grid.Row="5" Margin="5" Name="cbDatabase" DropDownOpened="cbDatabase_DropDownOpened"></ComboBox>
 
-        <Button Grid.Column="2" Grid.Row="6" FontWeight="DemiBold" FontSize="20" FontFamily="Segoe UI" Content="Load Tables" Width="150" 
-                HorizontalAlignment="Right" Margin="5" Name="btnLoadTables" Click="btnLoadTables_Click"></Button>
+            <TextBlock Grid.Column="0" Grid.Row="6" FontWeight="DemiBold" FontSize="20" FontFamily="Segoe UI"  Foreground="White"  Text="Filter Tables" Margin="5"></TextBlock>
+            <StackPanel  Grid.Column="2" Grid.Row="6" Orientation="Horizontal">
+                <!--<TextBox Width="200" Height="40" Margin="5" Name="txtFilterTables" VerticalAlignment="Top"></TextBox>-->
+                <ListBox Width="250" Height="250" Name="lstTablesEdit" Foreground="Black" FontFamily="Segoe UI" FontSize="16" SelectionMode="Extended">
+                </ListBox>
+                <StackPanel Orientation="Vertical">
+                    <Button Height="40" Width="20" Margin="5" Name="btnAddTable" FontSize="20" FontWeight="ExtraBold" VerticalAlignment="Top" Click="btnAddTable_Click">></Button>
+                    <Button Height="40" Width="60" Margin="5" Name="btnRemoveAllTable" FontSize="20" FontWeight="ExtraBold" VerticalAlignment="Top" Click="btnRemoveAllTable_Click">Clear</Button>
+                </StackPanel>
+                <ListBox Width="250" Height="250" HorizontalAlignment="Right" Name="lstTableFilter" PreviewKeyUp="lstTableFilter_PreviewKeyUp"></ListBox>
+                <Button Height="40" Width="20" Margin="5" Name="btnRemoveTable" FontSize="20" FontWeight="ExtraBold" VerticalAlignment="Top" Click="btnRemoveTable_Click">-</Button>
+            </StackPanel>
+            
+            <Button Grid.Column="2" Grid.Row="7" FontWeight="DemiBold" FontSize="20" FontFamily="Segoe UI" Content="Load Tables" Width="150" 
+                HorizontalAlignment="Right" Margin="5" Name="btnLoadTables" Click="btnLoadTables_Click"
+                    IsEnabled="{Binding ElementName=cbDatabase, Path=SelectedIndex, Converter={StaticResource IndexToBoolConverter}}"></Button>
+        </Grid>
 
         <TextBlock Grid.Column="0" Grid.Row="7" Name="tbTableCount" FontWeight="DemiBold" FontSize="20" FontFamily="Segoe UI"  Foreground="White" Margin="5"></TextBlock>
 
@@ -63,6 +96,8 @@
                          VerticalContentAlignment="Center">HTML Options</RadioButton>
             <RadioButton Grid.Column="0" Grid.Row="8" Name="rbJsonTmplt" FontWeight="DemiBold" FontSize="20" FontFamily="Segoe UI"  Foreground="White" Margin="5" 
                          VerticalContentAlignment="Center">Json Template</RadioButton>
+            <RadioButton Grid.Column="0" Grid.Row="8" Name="rbSQLObjects" FontWeight="DemiBold" FontSize="20" FontFamily="Segoe UI"  Foreground="White" Margin="5" 
+                         VerticalContentAlignment="Center">SQL Objects</RadioButton>
         </StackPanel>
 
         <StackPanel Grid.Column="2" Grid.Row="8" Orientation="Vertical" Height="auto" Name="spCSharp" Visibility="{Binding ElementName=rbCSHARP, Path=IsChecked, Converter={StaticResource BooleanToVisibilityConverter}}">
@@ -189,7 +224,13 @@
 
         <StackPanel Grid.Column="2" Grid.Row="8" Orientation="Vertical" Height="auto" Name="spAngular" Visibility="{Binding ElementName=rbAngular, Path=IsChecked, Converter={StaticResource BooleanToVisibilityConverter}}">
 
-            <CheckBox x:Name="chbAngularClass" FontWeight="DemiBold" FontSize="15" FontFamily="Segoe UI" Foreground="White">Angular Class</CheckBox>
+            <CheckBox x:Name="chbAngularClass" FontWeight="DemiBold" FontSize="15" FontFamily="Segoe UI" Foreground="White">Angular Model Class</CheckBox>
+            <CheckBox x:Name="chbAngularProjectClass" FontWeight="DemiBold" FontSize="15" FontFamily="Segoe UI" Foreground="White">Angular Project Service Class</CheckBox>
+            <CheckBox x:Name="chbAngularPhpInclude" FontWeight="DemiBold" FontSize="15" FontFamily="Segoe UI" Foreground="White">Angular PHP Include</CheckBox>
+            <CheckBox x:Name="chbAngularPhpPostHlp" FontWeight="DemiBold" FontSize="15" FontFamily="Segoe UI" Foreground="White">Ang-php service Postman Helper</CheckBox>
+            <CheckBox x:Name="chbAngularProjectFiles" FontWeight="DemiBold" FontSize="15" FontFamily="Segoe UI" Foreground="White">Angular Project Files</CheckBox>
+            <CheckBox x:Name="chbAngularRoutine" FontWeight="DemiBold" FontSize="15" FontFamily="Segoe UI" Foreground="White">Angular Routine</CheckBox>
+            <CheckBox x:Name="chbAngularEngine" FontWeight="DemiBold" FontSize="15" FontFamily="Segoe UI" Foreground="White">Angular Engine</CheckBox>
         </StackPanel>
 
         <StackPanel Grid.Column="2" Grid.Row="8" Orientation="Vertical" Height="auto" Name="spPostman" Visibility="{Binding ElementName=rbPostman, Path=IsChecked, Converter={StaticResource BooleanToVisibilityConverter}}">
@@ -230,7 +271,37 @@
 
             <CheckBox x:Name="chbCSHtmlPage" FontWeight="DemiBold" FontSize="15" FontFamily="Segoe UI" Foreground="White">cshtml Page</CheckBox>
         </StackPanel>
-        
+
+
+        <StackPanel Grid.Column="2" Grid.Row="8" Orientation="Vertical" Height="auto" Name="spSQLObject" Visibility="{Binding ElementName=rbSQLObjects, Path=IsChecked, Converter={StaticResource BooleanToVisibilityConverter}}">
+            <Label>Generate SQL objects.</Label>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="20"/>
+                    <ColumnDefinition Width="20"/>
+                    <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="10"/>
+                    <RowDefinition Height="20"/>
+                    <RowDefinition Height="20"/>
+                    <RowDefinition Height="20"/>
+                    <RowDefinition Height="20"/>
+                    <RowDefinition Height="20"/>
+                    <RowDefinition Height="20"/>
+                    <RowDefinition Height="20"/>
+                    <RowDefinition Height="20*"/>
+                </Grid.RowDefinitions>
+                <CheckBox  Grid.Column="2" Grid.Row="1" x:Name="chbProcedures" FontWeight="DemiBold" FontSize="15" FontFamily="Segoe UI" Foreground="White">Procedures</CheckBox>
+                <CheckBox  Grid.Column="2" Grid.Row="2" x:Name="chbTables" FontWeight="DemiBold" FontSize="15" FontFamily="Segoe UI" Foreground="White">Tables</CheckBox>
+                <CheckBox  Grid.Column="2" Grid.Row="3" x:Name="chbInsertScript" FontWeight="DemiBold" FontSize="15" FontFamily="Segoe UI" Foreground="White">Insert Script</CheckBox>
+                <CheckBox  Grid.Column="2" Grid.Row="4" x:Name="chbDeleteScript" FontWeight="DemiBold" FontSize="15" FontFamily="Segoe UI" Foreground="White">Delete Script</CheckBox>
+                <CheckBox  Grid.Column="2" Grid.Row="5" x:Name="chbSelectScript" FontWeight="DemiBold" FontSize="15" FontFamily="Segoe UI" Foreground="White">Select Script</CheckBox>
+                <CheckBox  Grid.Column="2" Grid.Row="6" x:Name="chbUpdateScript" FontWeight="DemiBold" FontSize="15" FontFamily="Segoe UI" Foreground="White">Update Script</CheckBox>
+                <CheckBox  Grid.Column="2" Grid.Row="7" x:Name="chbDBScripts" FontWeight="DemiBold" FontSize="15" FontFamily="Segoe UI" Foreground="White">All Database Script</CheckBox>
+            </Grid>
+        </StackPanel>
+
         <StackPanel Grid.Column="2" Grid.Row="9" Orientation="Horizontal" HorizontalAlignment="Right">
             <Button Grid.Column="2" Grid.Row="9" FontWeight="DemiBold" FontSize="20" FontFamily="Segoe UI" Content="Create API Doc" Width="150" 
                 HorizontalAlignment="Right" Margin="5" Name="btnCreateAPIDoc" Click="btnCreateAPIDoc_Click"></Button>
